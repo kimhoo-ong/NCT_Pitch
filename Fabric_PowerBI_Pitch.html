@@ -1,0 +1,3247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Feasibility Simulation Platform — Fedelis</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #faf7f1;          /* warm cream */
+  --bg-2: #f2ede3;        /* slightly deeper cream */
+  --ink: #1a1814;         /* deep warm black */
+  --ink-muted: #5c5851;   /* warm grey */
+  --ink-dim: #7a766a;     /* warm grey, readable on light bg */
+  --gold: #a8853f;        /* deeper gold for contrast on light bg */
+  --gold-bright: #c9a961; /* original gold for accents */
+  --gold-dim: rgba(168, 133, 63, 0.12);
+  --line: rgba(26, 24, 20, 0.10);
+  --line-bright: rgba(26, 24, 20, 0.25);
+  --serif: 'Fraunces', Georgia, serif;
+  --sans: 'Inter', system-ui, sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  overflow: hidden;
+  font-feature-settings: "ss01", "cv11";
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Ambient gold glow background */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 50% at 80% 20%, rgba(168, 133, 63, 0.10), transparent 60%),
+    radial-gradient(ellipse 60% 40% at 20% 80%, rgba(168, 133, 63, 0.06), transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Grain texture (subtle on light bg) */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E");
+  opacity: 0.06;
+  pointer-events: none;
+  z-index: 1;
+  mix-blend-mode: multiply;
+}
+
+.deck {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  z-index: 2;
+}
+
+.slide {
+  position: absolute;
+  inset: 0;
+  padding: 4.5vh 6vw;
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.slide.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.slide.active .reveal {
+  animation: rise 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.slide.active .reveal:nth-child(1) { animation-delay: 0.1s; }
+.slide.active .reveal:nth-child(2) { animation-delay: 0.2s; }
+.slide.active .reveal:nth-child(3) { animation-delay: 0.3s; }
+.slide.active .reveal:nth-child(4) { animation-delay: 0.4s; }
+.slide.active .reveal:nth-child(5) { animation-delay: 0.5s; }
+.slide.active .reveal:nth-child(6) { animation-delay: 0.6s; }
+.slide.active .reveal:nth-child(7) { animation-delay: 0.7s; }
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Chrome (header + footer) ─── */
+.chrome-top {
+  position: absolute;
+  top: 3vh;
+  left: 6vw;
+  right: 6vw;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  z-index: 10;
+}
+
+.chrome-bottom {
+  position: absolute;
+  bottom: 3vh;
+  left: 6vw;
+  right: 6vw;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  z-index: 10;
+}
+
+.chrome-bottom .dot {
+  color: var(--gold);
+  margin: 0 0.6em;
+}
+
+.slide-num {
+  color: var(--gold);
+}
+
+/* ─── Typography ─── */
+.eyebrow {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 1.5rem;
+}
+
+.h-display {
+  font-family: var(--serif);
+  font-weight: 300;
+  font-size: clamp(3rem, 7vw, 6rem);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-feature-settings: "ss01";
+}
+
+.h-display em {
+  font-style: italic;
+  font-weight: 400;
+  color: var(--gold);
+}
+
+.h-title {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: clamp(2.2rem, 4vw, 3.5rem);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+}
+
+.h-title em {
+  font-style: italic;
+  color: var(--gold);
+}
+
+.subtitle {
+  font-size: clamp(0.95rem, 1.2vw, 1.15rem);
+  color: var(--ink-muted);
+  font-weight: 300;
+  line-height: 1.5;
+  max-width: 60ch;
+}
+
+.body {
+  font-size: clamp(0.85rem, 1vw, 0.95rem);
+  color: var(--ink-muted);
+  line-height: 1.6;
+  font-weight: 300;
+}
+
+.tag {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold);
+  padding: 0.35em 0.8em;
+  border: 1px solid var(--gold-dim);
+  border-radius: 999px;
+}
+
+/* ─── Slide 1: Cover ─── */
+.cover {
+  justify-content: center;
+}
+
+.cover-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  max-width: 1200px;
+}
+
+.cover h1 {
+  font-family: var(--serif);
+  font-weight: 300;
+  font-size: clamp(3rem, 8vw, 7rem);
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+}
+
+.cover h1 .line2 {
+  font-style: italic;
+  color: var(--gold);
+  display: block;
+}
+
+.cover-meta {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--line);
+  max-width: 900px;
+}
+
+.cover-meta .meta-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  margin-bottom: 0.5rem;
+}
+
+.cover-meta .meta-value {
+  font-family: var(--serif);
+  font-size: 1.1rem;
+  color: var(--ink);
+  font-weight: 400;
+}
+
+/* ─── Slide 2: Agenda ─── */
+.agenda-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem 4rem;
+  margin-top: 3rem;
+  flex: 1;
+  align-content: center;
+}
+
+.agenda-item {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 1.5rem;
+  padding: 1.2rem 0;
+  border-bottom: 1px solid var(--line);
+  align-items: baseline;
+}
+
+.agenda-item .num {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 1.6rem;
+  color: var(--gold);
+  font-weight: 300;
+  min-width: 2rem;
+}
+
+.agenda-item .title {
+  font-family: var(--serif);
+  font-size: 1.3rem;
+  color: var(--ink);
+  font-weight: 400;
+  margin-bottom: 0.2rem;
+}
+
+.agenda-item .desc {
+  font-size: 0.85rem;
+  color: var(--ink-muted);
+  font-weight: 300;
+}
+
+/* ─── Slide 3: Challenge ─── */
+.challenge-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  margin-top: 2.5rem;
+  flex: 1;
+}
+
+.challenge-card {
+  padding: 1.8rem;
+  background: linear-gradient(180deg, rgba(0,0,0,0.03), transparent);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.challenge-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 2rem;
+  height: 1px;
+  background: var(--gold);
+}
+
+.challenge-card h3 {
+  font-family: var(--serif);
+  font-size: 1.15rem;
+  font-weight: 500;
+  color: var(--ink);
+  line-height: 1.3;
+}
+
+.challenge-card p {
+  font-size: 0.85rem;
+  color: var(--ink-muted);
+  line-height: 1.55;
+  font-weight: 300;
+}
+
+/* ─── Slide 4: Engine flow ─── */
+.flow {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto 1fr;
+  gap: 1.5rem;
+  align-items: stretch;
+  margin-top: 2.5rem;
+  flex: 1;
+}
+
+.flow-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gold);
+  font-size: 1.5rem;
+  font-family: var(--serif);
+  font-weight: 300;
+}
+
+.flow-box {
+  padding: 1.8rem;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: rgba(0,0,0,0.025);
+  display: flex;
+  flex-direction: column;
+}
+
+.flow-box.center {
+  border-color: var(--gold-dim);
+  background: linear-gradient(180deg, rgba(201, 169, 97, 0.04), transparent);
+  box-shadow: 0 8px 32px rgba(168, 133, 63, 0.12), 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.flow-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 0.6rem;
+}
+
+.flow-title {
+  font-family: var(--serif);
+  font-size: 1.2rem;
+  font-weight: 500;
+  margin-bottom: 1.2rem;
+  color: var(--ink);
+}
+
+.flow-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.flow-list li {
+  font-size: 0.82rem;
+  color: var(--ink-muted);
+  font-weight: 300;
+  padding-left: 1rem;
+  position: relative;
+  line-height: 1.4;
+}
+
+.flow-list li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.6em;
+  width: 5px;
+  height: 1px;
+  background: var(--gold);
+}
+
+/* ─── Slide 5: Before/After ─── */
+.comparison {
+  display: grid;
+  gap: 1.2rem;
+  margin-top: 2.5rem;
+  flex: 1;
+  align-content: center;
+}
+
+.comp-row {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr auto 1fr 1.2fr;
+  gap: 1.5rem;
+  align-items: center;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.comp-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+
+.comp-from {
+  font-family: var(--serif);
+  font-size: 1.6rem;
+  font-weight: 300;
+  color: var(--ink-muted);
+  text-align: right;
+  font-style: italic;
+}
+
+.comp-arrow {
+  color: var(--gold);
+  font-size: 1.2rem;
+}
+
+.comp-to {
+  font-family: var(--serif);
+  font-size: 1.8rem;
+  font-weight: 500;
+  color: var(--gold);
+  text-align: left;
+}
+
+.comp-context {
+  font-size: 0.8rem;
+  color: var(--ink-muted);
+  font-weight: 300;
+  text-align: right;
+}
+
+.comp-note {
+  margin-top: 1.5rem;
+  font-size: 0.75rem;
+  color: var(--ink-dim);
+  font-style: italic;
+  text-align: center;
+  font-weight: 300;
+}
+
+/* ─── Slide 6: Roles ─── */
+.roles {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  margin-top: 2rem;
+  flex: 1;
+}
+
+.role-card {
+  padding: 2rem 1.8rem;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  background: linear-gradient(180deg, rgba(0,0,0,0.03), transparent);
+}
+
+.role-icon {
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--gold);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.2rem;
+  font-family: var(--serif);
+  font-style: italic;
+  color: var(--gold);
+  font-size: 1.2rem;
+}
+
+.role-name {
+  font-family: var(--serif);
+  font-size: 1.4rem;
+  font-weight: 500;
+  color: var(--ink);
+  margin-bottom: 0.3rem;
+}
+
+.role-subtitle {
+  font-size: 0.8rem;
+  color: var(--gold);
+  font-style: italic;
+  margin-bottom: 1.2rem;
+  font-family: var(--serif);
+}
+
+.role-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  margin-bottom: 0.8rem;
+}
+
+.role-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.role-list li {
+  font-size: 0.82rem;
+  color: var(--ink-muted);
+  font-weight: 300;
+  line-height: 1.4;
+  padding-left: 1rem;
+  position: relative;
+}
+
+.role-list li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.5em;
+  width: 6px;
+  height: 1px;
+  background: var(--gold);
+}
+
+.role-footer {
+  margin-top: 1.5rem;
+  font-size: 0.82rem;
+  color: var(--ink-muted);
+  font-style: italic;
+  text-align: center;
+  font-family: var(--serif);
+  border-top: 1px solid var(--line);
+  padding-top: 1.2rem;
+}
+
+/* ─── Slide 7: Options A/B ─── */
+.options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-top: 2rem;
+  flex: 1;
+}
+
+.option-card {
+  padding: 2rem;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.option-card.featured {
+  border-color: var(--gold-dim);
+  background: linear-gradient(180deg, rgba(201, 169, 97, 0.04), transparent);
+  box-shadow: 0 8px 32px rgba(168, 133, 63, 0.10), 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.option-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.2rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.option-label {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.25em;
+  color: var(--gold);
+}
+
+.option-title {
+  font-family: var(--serif);
+  font-size: 1.6rem;
+  font-weight: 400;
+  color: var(--ink);
+  margin-bottom: 0.4rem;
+}
+
+.option-desc {
+  font-size: 0.85rem;
+  color: var(--ink-muted);
+  font-style: italic;
+  font-family: var(--serif);
+  margin-bottom: 1.5rem;
+  line-height: 1.4;
+}
+
+.option-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  flex: 1;
+}
+
+.option-row {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  gap: 1rem;
+  align-items: baseline;
+  font-size: 0.82rem;
+}
+
+.option-row .key {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+
+.option-row .val {
+  color: var(--ink);
+  font-weight: 300;
+  line-height: 1.4;
+}
+
+.option-best {
+  margin-top: 1.5rem;
+  padding-top: 1.2rem;
+  border-top: 1px solid var(--line);
+  font-size: 0.82rem;
+  font-family: var(--serif);
+  font-style: italic;
+  color: var(--gold);
+}
+
+/* ─── Slide 8: Phases ─── */
+.phases {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-top: 2.5rem;
+  position: relative;
+}
+
+.phases::before {
+  content: '';
+  position: absolute;
+  top: 22px;
+  left: 5%;
+  right: 5%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold-dim) 10%, var(--gold-dim) 90%, transparent);
+}
+
+.phase {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  padding: 0 0.5rem;
+}
+
+.phase-num {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 1px solid var(--gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--serif);
+  font-style: italic;
+  color: var(--gold);
+  font-size: 1.1rem;
+  margin-bottom: 1.5rem;
+  z-index: 2;
+}
+
+.phase-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  margin-bottom: 0.4rem;
+}
+
+.phase-title {
+  font-family: var(--serif);
+  font-size: 1.3rem;
+  font-weight: 500;
+  color: var(--ink);
+  margin-bottom: 1rem;
+}
+
+.phase-block {
+  padding: 1rem 0;
+  border-top: 1px solid var(--line);
+}
+
+.phase-block:last-child {
+  border-bottom: 1px solid var(--line);
+}
+
+.phase-key {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 0.4rem;
+}
+
+.phase-val {
+  font-size: 0.82rem;
+  color: var(--ink);
+  font-weight: 300;
+  line-height: 1.4;
+}
+
+.phases-footer {
+  grid-column: 1 / -1;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--line);
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2rem;
+  align-items: baseline;
+}
+
+.phases-footer-title {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 1.1rem;
+  color: var(--gold);
+}
+
+.phases-footer-text {
+  font-size: 0.85rem;
+  color: var(--ink-muted);
+  font-weight: 300;
+  line-height: 1.5;
+}
+
+/* ─── Slide 9: Input methods ─── */
+.inputs {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+  margin-top: 2rem;
+  flex: 1;
+}
+
+.input-card {
+  padding: 1.8rem;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.input-num {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 300;
+  font-size: 2.5rem;
+  color: var(--gold);
+  line-height: 1;
+}
+
+.input-body h3 {
+  font-family: var(--serif);
+  font-size: 1.15rem;
+  font-weight: 500;
+  margin-bottom: 0.2rem;
+}
+
+.input-method {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 0.8rem;
+}
+
+.input-desc {
+  font-size: 0.82rem;
+  color: var(--ink-muted);
+  line-height: 1.5;
+  font-weight: 300;
+  margin-bottom: 0.8rem;
+}
+
+.input-usecase {
+  font-size: 0.78rem;
+  color: var(--ink);
+  font-style: italic;
+  font-family: var(--serif);
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--line);
+}
+
+.input-phase {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  padding: 0.3em 0.7em;
+  border: 1px solid var(--gold-dim);
+  border-radius: 999px;
+  color: var(--gold);
+  white-space: nowrap;
+  align-self: start;
+}
+
+/* ─── Slide 10: Architecture ─── */
+.arch {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 2rem;
+  flex: 1;
+}
+
+.arch-layer {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 2rem;
+  padding: 1.2rem 0;
+  border-bottom: 1px solid var(--line);
+  align-items: center;
+}
+
+.arch-layer:last-child { border-bottom: none; }
+
+.arch-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+.arch-label .num {
+  display: block;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 1.5rem;
+  color: var(--gold);
+  margin-bottom: 0.3rem;
+}
+
+.arch-blocks {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.8rem;
+}
+
+.arch-block {
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  background: rgba(0,0,0,0.025);
+}
+
+.arch-block h4 {
+  font-family: var(--serif);
+  font-size: 0.95rem;
+  font-weight: 500;
+  margin-bottom: 0.2rem;
+}
+
+.arch-block p {
+  font-size: 0.72rem;
+  color: var(--ink-muted);
+  font-weight: 300;
+  line-height: 1.3;
+}
+
+.arch-pipe {
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  color: var(--ink);
+  letter-spacing: 0.05em;
+  padding: 0.8rem 1rem;
+  background: linear-gradient(90deg, rgba(201, 169, 97, 0.08), transparent);
+  border-left: 2px solid var(--gold);
+  border-radius: 0 3px 3px 0;
+}
+
+/* ─── Slide 11: Simulator video ─── */
+.sim-video-wrap {
+  flex: 1;
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+}
+
+.sim-video {
+  width: min(88vw, 1440px);
+  max-height: 68vh;
+  aspect-ratio: 16 / 9;
+  object-fit: contain;
+  border: 1px solid var(--gold-dim);
+  border-radius: 6px;
+  background: var(--bg);
+  box-shadow:
+    0 8px 32px rgba(168,133,63,0.12),
+    0 2px 8px rgba(0,0,0,0.04);
+}
+
+/* ─── Slide 12: Reference dashboard (data-rich mockup) ─── */
+.dash-frame {
+  flex: 1;
+  margin-top: 1.2rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: linear-gradient(180deg, rgba(0,0,0,0.025), transparent);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.dash-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid var(--line);
+  background: rgba(0,0,0,0.04);
+  flex-shrink: 0;
+}
+
+.dash-bar-left {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+}
+
+.dash-bar-title {
+  font-family: var(--serif);
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.dash-bar-title em {
+  font-style: italic;
+  color: var(--gold);
+}
+
+.dash-bar-filters {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.dash-pill {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  padding: 0.25em 0.6em;
+  border: 1px solid var(--line-bright);
+  border-radius: 999px;
+  color: var(--ink-muted);
+}
+
+.dash-pill.active {
+  border-color: var(--gold);
+  color: var(--gold);
+  background: var(--gold-dim);
+}
+
+.dash-status {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+}
+
+.dash-status::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #3ca05a;
+  box-shadow: 0 0 6px rgba(60, 160, 90, 0.4);
+}
+
+.dash-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 0.8rem;
+  min-height: 0;
+}
+
+/* KPI strip */
+.kpi-strip {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.kpi {
+  padding: 0.6rem 0.8rem;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: rgba(0,0,0,0.025);
+}
+
+.kpi-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  margin-bottom: 0.25rem;
+}
+
+.kpi-value {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: 1.4rem;
+  color: var(--ink);
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.kpi-value .unit {
+  font-size: 0.65rem;
+  color: var(--ink-muted);
+  margin-left: 0.25em;
+  font-weight: 300;
+}
+
+.kpi.highlight .kpi-value {
+  color: var(--gold);
+  font-style: italic;
+}
+
+.kpi-delta {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  margin-top: 0.25rem;
+  color: #3ca05a;
+}
+
+.kpi-delta.down { color: #c83232; }
+
+/* Mid + bottom rows */
+.dash-mid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 0.6rem;
+  flex: 1;
+  min-height: 0;
+}
+
+.dash-bottom {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.6rem;
+  flex-shrink: 0;
+}
+
+/* Chart panels */
+.chart-panel {
+  padding: 0.7rem 0.8rem;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: rgba(0,0,0,0.025);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 0.5rem;
+}
+
+.panel-title {
+  font-family: var(--serif);
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.panel-meta {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+
+.panel-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 0;
+}
+
+/* Cash flow chart */
+.cashflow-chart {
+  flex: 1;
+  min-height: 100px;
+}
+
+.cashflow-chart svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* Scenario bars */
+.scenario-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.scenario-row {
+  display: grid;
+  grid-template-columns: 60px 1fr 60px;
+  gap: 0.6rem;
+  align-items: center;
+  font-size: 0.75rem;
+}
+
+.scenario-name {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+.scenario-bar {
+  height: 12px;
+  background: rgba(0,0,0,0.06);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.scenario-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold-dim), var(--gold));
+  border-radius: 2px;
+}
+
+.scenario-row.base .scenario-fill {
+  background: linear-gradient(90deg, var(--gold-dim), var(--gold));
+}
+
+.scenario-row.bear .scenario-fill {
+  background: linear-gradient(90deg, rgba(200,60,60,0.25), #c83232);
+}
+
+.scenario-row.bull .scenario-fill {
+  background: linear-gradient(90deg, rgba(60,160,90,0.25), #3ca05a);
+}
+
+.scenario-val {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--ink);
+  text-align: right;
+}
+
+.scenario-foot {
+  margin-top: 0.6rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--line);
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.4rem;
+  font-size: 0.68rem;
+}
+
+.scenario-foot-key {
+  color: var(--ink-dim);
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 0.15em;
+}
+
+.scenario-foot-val {
+  color: var(--ink-muted);
+  font-size: 0.68rem;
+}
+
+/* GDV breakdown donut */
+.donut {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.donut svg {
+  width: 76px;
+  height: 76px;
+  flex-shrink: 0;
+}
+
+.donut-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.7rem;
+  flex: 1;
+}
+
+.donut-legend-row {
+  display: grid;
+  grid-template-columns: 8px 1fr auto;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.donut-legend-row .swatch {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.donut-legend-row .label {
+  color: var(--ink-muted);
+}
+
+.donut-legend-row .value {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  color: var(--ink);
+}
+
+/* Sensitivity tornado */
+.tornado {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.7rem;
+}
+
+.tornado-row {
+  display: grid;
+  grid-template-columns: 80px 1fr 1fr;
+  gap: 0.3rem;
+  align-items: center;
+  height: 12px;
+}
+
+.tornado-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--ink-muted);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.tornado-neg, .tornado-pos {
+  height: 8px;
+  background: rgba(0,0,0,0.06);
+  border-radius: 1px;
+  position: relative;
+}
+
+.tornado-neg .bar {
+  position: absolute;
+  right: 0;
+  height: 100%;
+  background: rgba(200,60,60,0.55);
+  border-radius: 1px;
+}
+
+.tornado-pos .bar {
+  position: absolute;
+  left: 0;
+  height: 100%;
+  background: rgba(60,160,90,0.55);
+  border-radius: 1px;
+}
+
+/* Assumptions table */
+.assumptions-table {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.25rem 0.8rem;
+  font-size: 0.7rem;
+}
+
+.assumptions-table .ak {
+  color: var(--ink-muted);
+}
+
+.assumptions-table .av {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  color: var(--gold);
+  text-align: right;
+}
+
+/* Caption */
+.dash-caption {
+  margin-top: 0.8rem;
+  font-size: 0.75rem;
+  color: var(--ink-dim);
+  font-style: italic;
+  font-family: var(--serif);
+  text-align: center;
+}
+
+.dash-caption strong {
+  font-weight: 500;
+  color: var(--gold);
+  font-style: normal;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-right: 0.4em;
+}
+
+/* ─── Slide 14: POC ─── */
+.poc {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 3rem;
+  margin-top: 2rem;
+  flex: 1;
+}
+
+.poc-left h3 {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 1.2rem;
+}
+
+.poc-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  margin-bottom: 2rem;
+}
+
+.poc-list li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 1rem;
+  align-items: baseline;
+  font-size: 0.9rem;
+  color: var(--ink);
+  font-weight: 300;
+  line-height: 1.4;
+}
+
+.poc-check {
+  color: var(--gold);
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 1.1rem;
+}
+
+.poc-decision {
+  margin-top: 1.5rem;
+  padding: 1.5rem;
+  border: 1px solid var(--gold-dim);
+  border-radius: 4px;
+  background: linear-gradient(180deg, rgba(201, 169, 97, 0.04), transparent);
+}
+
+.poc-decision-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 0.6rem;
+}
+
+.poc-decision-text {
+  font-family: var(--serif);
+  font-size: 1.05rem;
+  color: var(--ink);
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+.poc-decision-text em {
+  color: var(--gold);
+  font-style: italic;
+}
+
+.weeks {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.weeks h3 {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 0.5rem;
+}
+
+.week {
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  gap: 1.2rem;
+  align-items: center;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.week-num {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 2rem;
+  color: var(--gold);
+  font-weight: 300;
+  line-height: 1;
+  min-width: 2.5rem;
+}
+
+.week-name {
+  font-family: var(--serif);
+  font-size: 1.15rem;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.week-desc {
+  font-size: 0.82rem;
+  color: var(--ink-muted);
+  font-weight: 300;
+  line-height: 1.4;
+}
+
+/* ─── Navigation ─── */
+.nav {
+  position: fixed;
+  bottom: 3vh;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 6px;
+  z-index: 20;
+}
+
+.nav-dot {
+  width: 24px;
+  height: 2px;
+  background: var(--ink-dim);
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s;
+  padding: 0;
+}
+
+.nav-dot.active {
+  background: var(--gold);
+  width: 36px;
+}
+
+.nav-dot:hover {
+  background: var(--ink-muted);
+}
+
+.hint {
+  position: fixed;
+  bottom: 8vh;
+  right: 6vw;
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  z-index: 20;
+  opacity: 0.6;
+}
+
+.hint kbd {
+  display: inline-block;
+  padding: 2px 6px;
+  border: 1px solid var(--line-bright);
+  border-radius: 3px;
+  font-family: var(--mono);
+  font-size: 9px;
+  margin: 0 2px;
+  color: var(--ink-muted);
+}
+
+/* ─── Slide: Proven outcomes (new 12) ─── */
+.outcomes-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 2rem;
+  margin-top: 2rem;
+  flex: 1;
+}
+
+.outcomes-left {
+  display: flex;
+  flex-direction: column;
+}
+
+.case-study {
+  padding: 1.8rem;
+  border: 1px solid var(--gold-dim);
+  border-radius: 4px;
+  background: linear-gradient(180deg, rgba(201,169,97,0.04), transparent);
+  margin-bottom: 1.2rem;
+  flex: 1;
+}
+
+.case-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 1rem;
+  padding-bottom: 0.8rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.case-name {
+  font-family: var(--serif);
+  font-size: 1.4rem;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.case-name em {
+  font-style: italic;
+  color: var(--gold);
+}
+
+.case-meta {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+
+.case-quote {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 1rem;
+  color: var(--ink);
+  line-height: 1.5;
+  margin-bottom: 1rem;
+  padding-left: 1rem;
+  border-left: 2px solid var(--gold);
+}
+
+.case-attrib {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  margin-bottom: 1.2rem;
+}
+
+.case-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid var(--line);
+}
+
+.case-stat-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  margin-bottom: 0.3rem;
+}
+
+.case-stat-value {
+  font-family: var(--serif);
+  font-size: 1rem;
+  color: var(--ink);
+  font-weight: 400;
+  line-height: 1.3;
+}
+
+.case-stat-value em {
+  color: var(--gold);
+  font-style: italic;
+}
+
+/* Forrester ROI panel */
+.roi-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.roi-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding-bottom: 0.8rem;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 1.2rem;
+}
+
+.roi-title {
+  font-family: var(--serif);
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.roi-source {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+
+.roi-big {
+  font-family: var(--serif);
+  font-weight: 300;
+  font-size: 5rem;
+  color: var(--gold);
+  font-style: italic;
+  line-height: 0.9;
+  letter-spacing: -0.03em;
+  margin-bottom: 0.3rem;
+}
+
+.roi-big-sub {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  margin-bottom: 1.5rem;
+}
+
+.roi-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  flex: 1;
+}
+
+.roi-stat {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 1rem;
+  align-items: baseline;
+  padding: 0.7rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.roi-stat:last-child { border-bottom: none; }
+
+.roi-stat-num {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 1.4rem;
+  color: var(--gold);
+  font-weight: 400;
+  line-height: 1;
+}
+
+.roi-stat-text {
+  font-size: 0.82rem;
+  color: var(--ink-muted);
+  font-weight: 300;
+  line-height: 1.3;
+}
+
+.roi-footnote {
+  margin-top: 1rem;
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  text-align: right;
+}
+
+/* ─── Slide 15: Why Fedelis / CTA ─── */
+.cta-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 3rem;
+  margin-top: 2rem;
+  flex: 1;
+}
+
+.fedelis-card {
+  padding: 2rem;
+  border: 1px solid var(--gold-dim);
+  border-radius: 4px;
+  background: linear-gradient(180deg, rgba(201,169,97,0.05), transparent);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.fedelis-tagline {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 1.6rem;
+  font-weight: 300;
+  color: var(--gold);
+  line-height: 1.2;
+  margin-bottom: 0.4rem;
+  letter-spacing: -0.01em;
+}
+
+.fedelis-tagline-cn {
+  font-family: var(--serif);
+  font-size: 1rem;
+  color: var(--ink-muted);
+  margin-bottom: 1.5rem;
+  font-style: italic;
+}
+
+.fedelis-credentials {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  margin-bottom: 1.5rem;
+  flex: 1;
+}
+
+.fedelis-credentials li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.9rem;
+  align-items: baseline;
+  font-size: 0.88rem;
+  color: var(--ink);
+  font-weight: 300;
+  line-height: 1.4;
+}
+
+.fedelis-credentials .cred-icon {
+  color: var(--gold);
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 1.1rem;
+}
+
+.fedelis-credentials strong {
+  color: var(--gold);
+  font-weight: 500;
+  font-style: normal;
+}
+
+.fedelis-team {
+  margin-top: auto;
+  padding-top: 1.2rem;
+  border-top: 1px solid var(--line);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.8rem;
+  font-size: 0.78rem;
+}
+
+.team-role {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  margin-bottom: 0.2rem;
+}
+
+.team-name {
+  font-family: var(--serif);
+  color: var(--ink);
+  font-weight: 400;
+}
+
+.cta-right {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.cta-ask {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 0.5rem;
+}
+
+.cta-title {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 2.4rem;
+  line-height: 1.05;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+  margin-bottom: 1.5rem;
+}
+
+.cta-title em {
+  font-style: italic;
+  color: var(--gold);
+}
+
+.cta-decisions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  margin-bottom: 1.5rem;
+}
+
+.cta-decision {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  gap: 1rem;
+  align-items: baseline;
+  padding: 0.8rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.cta-decision-num {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 1.1rem;
+  color: var(--gold);
+}
+
+.cta-decision-body {
+  font-size: 0.9rem;
+  color: var(--ink);
+  font-weight: 300;
+  line-height: 1.4;
+}
+
+.cta-decision-body strong {
+  color: var(--gold);
+  font-weight: 500;
+}
+
+.cta-contact {
+  margin-top: auto;
+  padding: 1.2rem 1.4rem;
+  border: 1px solid var(--gold-dim);
+  border-radius: 4px;
+  background: rgba(201,169,97,0.03);
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 1rem;
+  align-items: center;
+}
+
+.cta-contact-text {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 0.95rem;
+  color: var(--ink);
+  line-height: 1.4;
+}
+
+.cta-contact-text strong {
+  color: var(--gold);
+  font-style: normal;
+  font-weight: 500;
+}
+
+.cta-contact-action {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold);
+  padding: 0.5em 1em;
+  border: 1px solid var(--gold);
+  border-radius: 4px;
+}
+@media print {
+  body, html { overflow: visible; }
+  .deck { height: auto; }
+  .slide {
+    position: relative;
+    opacity: 1;
+    pointer-events: auto;
+    page-break-after: always;
+    width: 100vw;
+    height: 100vh;
+  }
+  .nav, .hint { display: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="deck" id="deck">
+
+<!-- ════════════════ SLIDE 1: COVER ════════════════ -->
+<section class="slide cover active">
+  <div class="chrome-top reveal">
+    <div>FEDELIS <span class="dot" style="color:var(--gold);margin:0 0.5em">·</span> PROPOSAL</div>
+    <div>v2.0 <span class="dot" style="color:var(--gold);margin:0 0.5em">·</span> APRIL 2026</div>
+  </div>
+
+  <div class="cover-grid">
+    <div class="reveal">
+      <span class="tag">Proposal Overview</span>
+    </div>
+    <h1 class="reveal">
+      Feasibility Simulation<br>
+      <span class="line2">Platform.</span>
+    </h1>
+    <p class="subtitle reveal" style="max-width:55ch;margin-top:1rem;font-size:1.2rem;line-height:1.5">
+      From days of spreadsheet rebuilding to minutes of parameter-driven simulation — built for collaborative project evaluation.
+    </p>
+    <div class="cover-meta reveal">
+      <div>
+        <div class="meta-label">Audience</div>
+        <div class="meta-value">Management · IC · Finance</div>
+      </div>
+      <div>
+        <div class="meta-label">Reference</div>
+        <div class="meta-value">Std Feasi · Emira Shah Alam</div>
+      </div>
+      <div>
+        <div class="meta-label">Prepared by</div>
+        <div class="meta-value">Fedelis · Ong Kim Hoo</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════ SLIDE 2: AGENDA ════════════════ -->
+<section class="slide">
+  <div class="chrome-top">
+    <div>01 <span style="color:var(--gold);margin:0 0.5em">·</span> AGENDA</div>
+    <div class="slide-num">02 / 15</div>
+  </div>
+
+  <div class="reveal" style="margin-top:8vh">
+    <span class="eyebrow">What we will cover today</span>
+    <h2 class="h-display">The <em>agenda.</em></h2>
+  </div>
+
+  <div class="agenda-grid">
+    <div class="agenda-item reveal">
+      <span class="num">01</span>
+      <div>
+        <div class="title">The challenge</div>
+        <div class="desc">Why feasibility analysis takes 1–3 days today</div>
+      </div>
+    </div>
+    <div class="agenda-item reveal">
+      <span class="num">02</span>
+      <div>
+        <div class="title">Simulation engine</div>
+        <div class="desc">Parameter-driven modelling on your Std Feasi format</div>
+      </div>
+    </div>
+    <div class="agenda-item reveal">
+      <span class="num">03</span>
+      <div>
+        <div class="title">Two solution options</div>
+        <div class="desc">Light or deep automation — same destination</div>
+      </div>
+    </div>
+    <div class="agenda-item reveal">
+      <span class="num">04</span>
+      <div>
+        <div class="title">Architecture &amp; data inputs</div>
+        <div class="desc">Source to dashboard, end-to-end</div>
+      </div>
+    </div>
+    <div class="agenda-item reveal">
+      <span class="num">05</span>
+      <div>
+        <div class="title">Reference dashboard</div>
+        <div class="desc">Your data, live — Emira Shah Alam as a base</div>
+      </div>
+    </div>
+    <div class="agenda-item reveal">
+      <span class="num">06</span>
+      <div>
+        <div class="title">Proven outcomes</div>
+        <div class="desc">ECE Group · Forrester TEI · 379% 3-yr ROI</div>
+      </div>
+    </div>
+    <div class="agenda-item reveal">
+      <span class="num">07</span>
+      <div>
+        <div class="title">4-week proof of concept</div>
+        <div class="desc">Low-risk validation on a real project</div>
+      </div>
+    </div>
+    <div class="agenda-item reveal">
+      <span class="num">08</span>
+      <div>
+        <div class="title">Commercial &amp; decision ask</div>
+        <div class="desc">Investment, team, and what we need from you</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chrome-bottom">
+    <div>FEASIBILITY SIMULATION PLATFORM <span class="dot">·</span> MICROSOFT FABRIC + POWER BI</div>
+    <div>FEDELIS</div>
+  </div>
+</section>
+
+<!-- ════════════════ SLIDE 3: CHALLENGE ════════════════ -->
+<section class="slide">
+  <div class="chrome-top">
+    <div>02 <span style="color:var(--gold);margin:0 0.5em">·</span> THE CHALLENGE</div>
+    <div class="slide-num">03 / 15</div>
+  </div>
+
+  <div class="reveal" style="margin-top:6vh">
+    <span class="eyebrow">Where the 1–3 days actually go</span>
+    <h2 class="h-display">The challenge <em>today.</em></h2>
+  </div>
+
+  <div class="challenge-grid">
+    <div class="challenge-card reveal">
+      <h3>Every new project starts from zero</h3>
+      <p>Copy last project's Excel, find-and-replace assumptions, hope nothing breaks. Setup alone takes hours.</p>
+    </div>
+    <div class="challenge-card reveal">
+      <h3>One variable change = long wait</h3>
+      <p>Adjust selling price by 5% — wait for hundreds of formulas across 10+ sheets to recalculate.</p>
+    </div>
+    <div class="challenge-card reveal">
+      <h3>What-if questions are slow</h3>
+      <p>Director asks 'what if we delay sales by 6 months?' — answering live is impossible.</p>
+    </div>
+    <div class="challenge-card reveal">
+      <h3>Three scenarios = three files</h3>
+      <p>Bear, Base, Optimistic each lives in a separate workbook. Comparing them needs manual consolidation.</p>
+    </div>
+    <div class="challenge-card reveal">
+      <h3>Historical projects don't help</h3>
+      <p>Past project data sits in old folders. No way to pull comparable assumptions automatically.</p>
+    </div>
+    <div class="challenge-card reveal">
+      <h3>Outputs are slides, not data</h3>
+      <p>Every report is a hand-built PPT. Once finalised, the underlying numbers are frozen and stale.</p>
+    </div>
+  </div>
+
+  <div class="chrome-bottom">
+    <div>FEASIBILITY SIMULATION PLATFORM <span class="dot">·</span> MICROSOFT FABRIC + POWER BI</div>
+    <div>FEDELIS</div>
+  </div>
+</section>
+
+<!-- ════════════════ SLIDE 4: ENGINE ════════════════ -->
+<section class="slide">
+  <div class="chrome-top">
+    <div>03 <span style="color:var(--gold);margin:0 0.5em">·</span> SIMULATION ENGINE</div>
+    <div class="slide-num">04 / 15</div>
+  </div>
+
+  <div class="reveal" style="margin-top:5vh">
+    <span class="eyebrow">Same inputs, but parameterised</span>
+    <h2 class="h-title">From spreadsheet to <em>simulation engine.</em></h2>
+    <p class="subtitle" style="margin-top:0.8rem">Change a variable, see the impact instantly.</p>
+  </div>
+
+  <div class="flow">
+    <div class="flow-box reveal">
+      <div class="flow-label">Input</div>
+      <div class="flow-title">Std Feasi inputs</div>
+      <ul class="flow-list">
+        <li>Land cost / Plot Ratio (6)</li>
+        <li>Construction cost (RM/SF GFA)</li>
+        <li>Unit mix · No. of Units · Built Up</li>
+        <li>S. Price / SF · Price / Unit</li>
+        <li>Bank borrowing 75% · Equity 25%</li>
+        <li>Discount stack (5 types incl. Bumi)</li>
+        <li>Efficiency (NFA / GFA = 80%)</li>
+        <li>Project Mgmt fees · Admin fees</li>
+      </ul>
+    </div>
+    <div class="flow-arrow reveal">→</div>
+    <div class="flow-box center reveal">
+      <div class="flow-label">Simulation Engine</div>
+      <div class="flow-title">Parameterised model</div>
+      <ul class="flow-list">
+        <li>L1 → L6 hierarchy (Parcel → SPH)</li>
+        <li>Per-product DAX measures</li>
+        <li>Common Cost allocation</li>
+        <li>Sub-minute pipeline refresh</li>
+      </ul>
+    </div>
+    <div class="flow-arrow reveal">→</div>
+    <div class="flow-box reveal">
+      <div class="flow-label">Output</div>
+      <div class="flow-title">FIN FEASI</div>
+      <ul class="flow-list">
+        <li>GDV (Gross + Net) · TDC</li>
+        <li>Gross Profit · Net Profit Margin</li>
+        <li>Cost per SF · GFA + NFA</li>
+        <li>Three-scenario comparison</li>
+        <li>Sensitivity (price · cost · pace)</li>
+        <li>Break-even price per SF</li>
+        <li>Live cost structure dashboard</li>
+        <li>Investor-ready visuals</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="chrome-bottom">
+    <div>FEASIBILITY SIMULATION PLATFORM <span class="dot">·</span> MICROSOFT FABRIC + POWER BI</div>
+    <div>FEDELIS</div>
+  </div>
+</section>
+
+<!-- ════════════════ SLIDE 5: BEFORE / AFTER ════════════════ -->
+<section class="slide">
+  <div class="chrome-top">
+    <div>04 <span style="color:var(--gold);margin:0 0.5em">·</span> WHAT CHANGES</div>
+    <div class="slide-num">05 / 15</div>
+  </div>
+
+  <div class="reveal" style="margin-top:5vh">
+    <span class="eyebrow">Speed and reuse — the two dimensions that matter</span>
+    <h2 class="h-title">What <em>changes.</em></h2>
+  </div>
+
+  <div class="comparison">
+    <div class="comp-row reveal">
+      <div class="comp-context">New project onboarding (after platform live)</div>
+      <div class="comp-from">1–3 days</div>
+      <div class="comp-arrow">→</div>
+      <div class="comp-to">&lt; 1 day</div>
+      <div class="comp-label">Setup</div>
+    </div>
+    <div class="comp-row reveal">
+      <div class="comp-context">Excel update → dashboard refresh</div>
+      <div class="comp-from">5–15 min</div>
+      <div class="comp-arrow">→</div>
+      <div class="comp-to">Sub-minute</div>
+      <div class="comp-label">Refresh</div>
+    </div>
+    <div class="comp-row reveal">
+      <div class="comp-context">Three-scenario comparison</div>
+      <div class="comp-from">Sequential</div>
+      <div class="comp-arrow">→</div>
+      <div class="comp-to">Concurrent</div>
+      <div class="comp-label">Scenarios</div>
+    </div>
+    <div class="comp-row reveal">
+      <div class="comp-context">Project model setup</div>
+      <div class="comp-from">From scratch</div>
+      <div class="comp-arrow">→</div>
+      <div class="comp-to">Template</div>
+      <div class="comp-label">Reuse</div>
+    </div>
+    <div class="comp-row reveal">
+      <div class="comp-context">Comparable project lookup</div>
+      <div class="comp-from">Manual</div>
+      <div class="comp-arrow">→</div>
+      <div class="comp-to">Automatic</div>
+      <div class="comp-label">Lookup</div>
+    </div>
+    <div class="comp-row reveal">
+      <div class="comp-context">Output deliverables</div>
+      <div class="comp-from">Frozen PPT</div>
+      <div class="comp-arrow">→</div>
+      <div class="comp-to">Live data</div>
+      <div class="comp-label">Delivery</div>
+    </div>
+  </div>
+
+  <div class="comp-note reveal">Indicative based on similar deployments. Actual results depend on project complexity and team adoption.</div>
+
+  <div class="chrome-bottom">
+    <div>FEASIBILITY SIMULATION PLATFORM <span class="dot">·</span> MICROSOFT FABRIC + POWER BI</div>
+    <div>FEDELIS</div>
+  </div>
+</section>
+
+<!-- ════════════════ SLIDE 6: ROLES ════════════════ -->
+<section class="slide">
+  <div class="chrome-top">
+    <div>05 <span style="color:var(--gold);margin:0 0.5em">·</span> BUILT FOR COLLABORATION</div>
+    <div class="slide-num">06 / 15</div>
+  </div>
+
+  <div class="reveal" style="margin-top:5vh">
+    <span class="eyebrow">Three roles, one platform — different views, same data</span>
+    <h2 class="h-title">Built for <em>collaboration.</em></h2>
+  </div>
+
+  <div class="roles">
+    <div class="role-card reveal">
+      <div class="role-icon">QS</div>
+      <div class="role-name">Quantity Surveyor</div>
+      <div class="role-subtitle">Inputs and assumptions</div>
+      <div class="role-label">What they do</div>
+      <ul class="role-list">
+        <li>Sets construction cost per psf</li>
+        <li>Updates unit mix and sizing</li>
+        <li>Maintains material cost benchmarks</li>
+        <li>Adjusts contingency factors</li>
+      </ul>
+    </div>
+    <div class="role-card reveal">
+      <div class="role-icon">IC</div>
+      <div class="role-name">Investment Committee</div>
+      <div class="role-subtitle">Scenario evaluation</div>
+      <div class="role-label">What they do</div>
+      <ul class="role-list">
+        <li>Reviews GDV / margin / cost structure</li>
+        <li>Compares Bear / Base / Optimistic</li>
+        <li>Stress-tests sensitivity</li>
+        <li>Approves or vetoes the project</li>
+      </ul>
+    </div>
+    <div class="role-card reveal">
+      <div class="role-icon">F</div>
+      <div class="role-name">Finance Team</div>
+      <div class="role-subtitle">Cash flow and funding</div>
+      <div class="role-label">What they do</div>
+      <ul class="role-list">
+        <li>Models monthly cash flow</li>
+        <li>Identifies peak funding gap</li>
+        <li>Plans equity / debt mix</li>
+        <li>Tracks actual vs forecast</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="reveal" style="margin-top:1.5rem;text-align:center;font-family:var(--serif);font-style:italic;color:var(--ink-muted);font-size:0.95rem;max-width:80ch;margin-left:auto;margin-right:auto;line-height:1.5">
+    Single source of truth — when QS updates a cost, IC sees the new margin. When sales velocity changes, the funding profile updates.
+  </div>
+
+  <div class="chrome-bottom">
+    <div>FEASIBILITY SIMULATION PLATFORM <span class="dot">·</span> MICROSOFT FABRIC + POWER BI</div>
+    <div>FEDELIS</div>
+  </div>
+</section>
+
+<!-- ════════════════ SLIDE 7: OPTIONS ════════════════ -->
+<section class="slide">
+  <div class="chrome-top">
+    <div>06 <span style="color:var(--gold);margin:0 0.5em">·</span> TWO SOLUTION OPTIONS</div>
+    <div class="slide-num">07 / 15</div>
+  </div>
+
+  <div class="reveal" style="margin-top:5vh">
+    <span class="eyebrow">Light or deep automation — same destination, different speed</span>
+    <h2 class="h-title">Two solution <em>options.</em></h2>
+  </div>
+
+  <div class="options">
+    <div class="option-card featured reveal">
+      <div class="option-header">
+        <div>
+          <div class="option-label">OPTION A</div>
+          <div class="option-title">Light automation</div>
+        </div>
+        <div class="tag">Recommended start</div>
+      </div>
+      <div class="option-desc">Excel stays as input. Fabric integrates and reports.</div>
+      <div class="option-rows">
+        <div class="option-row"><span class="key">Input</span><span class="val">Excel files in SharePoint (unchanged)</span></div>
+        <div class="option-row"><span class="key">Ingestion</span><span class="val">Dataflow Gen2 (scheduled refresh)</span></div>
+        <div class="option-row"><span class="key">Calculation</span><span class="val">DAX measures in Power BI</span></div>
+        <div class="option-row"><span class="key">Collaboration</span><span class="val">Power BI workspace, comments, share links</span></div>
+        <div class="option-row"><span class="key">Output</span><span class="val">Power BI dashboard + Excel pivot live connect</span></div>
+      </div>
+      <div class="option-best">Best for: Excel works but is slow / fragmented</div>
+    </div>
+
+    <div class="option-card reveal">
+      <div class="option-header">
+        <div>
+          <div class="option-label">OPTION B</div>
+          <div class="option-title">Deep automation</div>
+        </div>
+      </div>
+      <div class="option-desc">Fabric becomes the source of truth. Excel becomes optional.</div>
+      <div class="option-rows">
+        <div class="option-row"><span class="key">Input</span><span class="val">In-platform editing · scope TBD</span></div>
+        <div class="option-row"><span class="key">Ingestion</span><span class="val">Sub-minute refresh on update</span></div>
+        <div class="option-row"><span class="key">Calculation</span><span class="val">Centralised in Fabric (locked logic)</span></div>
+        <div class="option-row"><span class="key">Collaboration</span><span class="val">Approval workflows · audit log</span></div>
+        <div class="option-row"><span class="key">Output</span><span class="val">Live dashboards + alerts + mobile</span></div>
+      </div>
+      <div class="option-best">Future expansion · evaluated after Phase 1 outcomes</div>
+    </div>
+  </div>
+
+  <div class="chrome-bottom">
+    <div>FEASIBILITY SIMULATION PLATFORM <span class="dot">·</span> MICROSOFT FABRIC + POWER BI</div>
+    <div>FEDELIS</div>
+  </div>
+</section>
+
+<!-- ════════════════ SLIDE 8: RECOMMENDED PATH ════════════════ -->
+<section class="slide">
+  <div class="chrome-top">
+    <div>07 <span style="color:var(--gold);margin:0 0.5em">·</span> RECOMMENDED PATH</div>
+    <div class="slide-num">08 / 15</div>
+  </div>
+
+  <div class="reveal" style="margin-top:5vh">
+    <span class="eyebrow">Start light, expand based on proven value</span>
+    <h2 class="h-title">The recommended <em>path.</em></h2>
+  </div>
+
+  <div class="phases">
+    <div class="phase reveal">
+      <div class="phase-num">01</div>
+      <div class="phase-label">Stage 1</div>
+      <div class="phase-title">Pilot</div>
+      <div class="phase-block">
+        <div class="phase-key">Scope</div>
+        <div class="phase-val">1 project, Option A, 5 Excel files</div>
+      </div>
+      <div class="phase-block">
+        <div class="phase-key">Outcome</div>
+        <div class="phase-val">Working dashboard from real data</div>
+      </div>
+    </div>
+    <div class="phase reveal">
+      <div class="phase-num">02</div>
+      <div class="phase-label">Stage 2</div>
+      <div class="phase-title">Phase 2</div>
+      <div class="phase-block">
+        <div class="phase-key">Scope</div>
+        <div class="phase-val">All projects on Option A workflow</div>
+      </div>
+      <div class="phase-block">
+        <div class="phase-key">Outcome</div>
+        <div class="phase-val">Standardised reporting</div>
+      </div>
+      <div style="margin-top:0.6rem;padding-top:0.6rem;border-top:1px dashed var(--line);font-family:var(--mono);font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--ink-dim)">Out of current scope</div>
+    </div>
+    <div class="phase reveal">
+      <div class="phase-num">03</div>
+      <div class="phase-label">Stage 3</div>
+      <div class="phase-title">Phase 3</div>
+      <div class="phase-block">
+        <div class="phase-key">Scope</div>
+        <div class="phase-val">In-platform editing capability</div>
+      </div>
+      <div class="phase-block">
+        <div class="phase-key">Outcome</div>
+        <div class="phase-val">Collaborative authoring</div>
+      </div>
+      <div style="margin-top:0.6rem;padding-top:0.6rem;border-top:1px dashed var(--line);font-family:var(--mono);font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--ink-dim)">Out of current scope</div>
+    </div>
+    <div class="phase reveal">
+      <div class="phase-num">04</div>
+      <div class="phase-label">Ongoing</div>
+      <div class="phase-title">Run</div>
+      <div class="phase-block">
+        <div class="phase-key">Scope</div>
+        <div class="phase-val">Managed service + optimisation</div>
+      </div>
+      <div class="phase-block">
+        <div class="phase-key">Outcome</div>
+        <div class="phase-val">Continuous improvement</div>
+      </div>
+    </div>
+
+    <div class="phases-footer reveal">
+      <div class="phases-footer-title">Why this sequence works</div>
+      <div class="phases-footer-text">Lower decision risk, fast time to value, and Phase 3 only commits when Phase 1–2 results justify it.</div>
+    </div>
+  </div>
+
+  <div class="chrome-bottom">
+    <div>FEASIBILITY SIMULATION PLATFORM <span class="dot">·</span> MICROSOFT FABRIC + POWER BI</div>
+    <div>FEDELIS</div>
+  </div>
+</section>
+
+<!-- ════════════════ SLIDE 9: DATA INPUTS ════════════════ -->
+<section class="slide">
+  <div class="chrome-top">
+    <div>08 <span style="color:var(--gold);margin:0 0.5em">·</span> DATA INPUT METHODS</div>
+    <div class="slide-num">09 / 15</div>
+  </div>
+
+  <div class="reveal" style="margin-top:5vh">
+    <span class="eyebrow">Four input methods — match the method to the source</span>
+    <h2 class="h-title">How project data enters <em>Fabric.</em></h2>
+  </div>
+
+  <div class="inputs">
+    <div class="input-card reveal">
+      <div class="input-num">01</div>
+      <div class="input-body">
+        <h3>Standardized Excel Template</h3>
+        <div class="input-method">v1.0 · NCT-branded</div>
+        <div class="input-desc">Deliverable Excel template (.xltx) with fixed schema, data validation, and protected formula cells. Every project uses the same structure.</div>
+        <div class="input-usecase">QS / Finance · the standard input format</div>
+      </div>
+      <div class="input-phase">Phase 1</div>
+    </div>
+
+    <div class="input-card reveal">
+      <div class="input-num">02</div>
+      <div class="input-body">
+        <h3>Excel &amp; SharePoint ingestion</h3>
+        <div class="input-method">Dataflow Gen2</div>
+        <div class="input-desc">Templated Excel files refresh on schedule. Power Query handles cross-sheet relationships, validation, and lineage tracking.</div>
+        <div class="input-usecase">All project data — the platform's backbone</div>
+      </div>
+      <div class="input-phase">Phase 1</div>
+    </div>
+
+    <div class="input-card reveal">
+      <div class="input-num">03</div>
+      <div class="input-body">
+        <h3>REST API &amp; reference files</h3>
+        <div class="input-method">Pipelines</div>
+        <div class="input-desc">Pull data from market-data feeds, government property indices, comparable project benchmarks, or other source systems.</div>
+        <div class="input-usecase">Market context · external benchmarks</div>
+      </div>
+      <div class="input-phase">Phase 1</div>
+    </div>
+
+    <div class="input-card reveal" style="border-color:var(--gold-dim);background:linear-gradient(180deg, rgba(168,133,63,0.05), transparent)">
+      <div class="input-num">04</div>
+      <div class="input-body">
+        <h3>HTML What-If Simulator</h3>
+        <div class="input-method">Browser-based · zero-install</div>
+        <div class="input-desc">CFO/IC use the simulator in meetings to explore scenarios. Results exported as a Scenario Report (CSV) — QS/Finance then update the Excel template through the normal workflow.</div>
+        <div class="input-usecase">Strategic what-if · decision exploration</div>
+      </div>
+      <div class="input-phase">Phase 1 · Bonus</div>
+    </div>
+  </div>
+
+  <div class="chrome-bottom">
+    <div>FEASIBILITY SIMULATION PLATFORM <span class="dot">·</span> MICROSOFT FABRIC + POWER BI</div>
+    <div>FEDELIS</div>
+  </div>
+</section>
+
+<!-- ════════════════ SLIDE 10: ARCHITECTURE ════════════════ -->
+<section class="slide">
+  <div class="chrome-top">
+    <div>09 <span style="color:var(--gold);margin:0 0.5em">·</span> ARCHITECTURE</div>
+    <div class="slide-num">10 / 15</div>
+  </div>
+
+  <div class="reveal" style="margin-top:5vh">
+    <span class="eyebrow">Four layers — sources flow through OneLake into Power BI</span>
+    <h2 class="h-title">End-to-end <em>architecture.</em></h2>
+  </div>
+
+  <div class="arch">
+    <div class="arch-layer reveal">
+      <div class="arch-label">
+        <span class="num">01</span>
+        Sources
+      </div>
+      <div class="arch-blocks">
+        <div class="arch-block">
+          <h4>Excel</h4>
+          <p>OneDrive / SharePoint</p>
+        </div>
+        <div class="arch-block">
+          <h4>APIs</h4>
+          <p>Market / Comparables</p>
+        </div>
+        <div class="arch-block">
+          <h4>Files</h4>
+          <p>FTP / Network drive</p>
+        </div>
+        <div class="arch-block">
+          <h4>Template</h4>
+          <p>NCT Feasi v1.0 (.xltx)</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="arch-layer reveal">
+      <div class="arch-label">
+        <span class="num">02</span>
+        Ingestion
+      </div>
+      <div class="arch-pipe">Microsoft Fabric  ·  Dataflow Gen2  ·  Pipelines  ·  Shortcuts</div>
+    </div>
+
+    <div class="arch-layer reveal">
+      <div class="arch-label">
+        <span class="num">03</span>
+        OneLake
+      </div>
+      <div class="arch-blocks" style="grid-template-columns:repeat(3,1fr)">
+        <div class="arch-block">
+          <h4>Bronze · Raw landing</h4>
+          <p>Original data, time travel</p>
+        </div>
+        <div class="arch-block">
+          <h4>Silver · Cleansed</h4>
+          <p>Conformed, validated</p>
+        </div>
+        <div class="arch-block">
+          <h4>Gold · Star schema</h4>
+          <p>Direct Lake ready</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="arch-layer reveal">
+      <div class="arch-label">
+        <span class="num">04</span>
+        Consumption
+      </div>
+      <div class="arch-blocks">
+        <div class="arch-block">
+          <h4>Power BI</h4>
+          <p>Direct Lake reports</p>
+        </div>
+        <div class="arch-block">
+          <h4>Excel Live</h4>
+          <p>PivotTable / cube</p>
+        </div>
+        <div class="arch-block">
+          <h4>Mobile</h4>
+          <p>Field access</p>
+        </div>
+        <div class="arch-block">
+          <h4>Alerts</h4>
+          <p>Threshold-based</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chrome-bottom">
+    <div>FEASIBILITY SIMULATION PLATFORM <span class="dot">·</span> MICROSOFT FABRIC + POWER BI</div>
+    <div>FEDELIS</div>
+  </div>
+</section>
+
+<!-- ════════════════ SLIDE 11: LIVE SIMULATOR DEMO ════════════════ -->
+<section class="slide">
+  <div class="chrome-top">
+    <div>10 <span style="color:var(--gold);margin:0 0.5em">·</span> SIMULATOR · IN ACTION</div>
+    <div class="slide-num">11 / 15</div>
+  </div>
+
+  <div class="reveal" style="margin-top:4vh">
+    <span class="eyebrow">CFO adjusts two assumptions · margin recalculates live</span>
+    <h2 class="h-title">See it in <em>action.</em></h2>
+  </div>
+
+  <div class="sim-video-wrap reveal">
+    <video
+      class="sim-video"
+      muted
+      autoplay
+      loop
+      playsinline
+      preload="metadata"
+      aria-label="NCT Feasibility Simulator demo video"
+    >
+      <source src="./assets/simulator-demo.mp4" type="video/mp4">
+      <source src="./assets/simulator-demo.webm" type="video/webm">
+    </video>
+  </div>
+
+  <div class="chrome-bottom">
+    <div>FEASIBILITY SIMULATION PLATFORM <span class="dot">·</span> MICROSOFT FABRIC + POWER BI</div>
+    <div>FEDELIS</div>
+  </div>
+</section>
+
+<!-- ════════════════ SLIDE 12: REFERENCE DASHBOARD ════════════════ -->
+<section class="slide">
+  <div class="chrome-top">
+    <div>11 <span style="color:var(--gold);margin:0 0.5em">·</span> REFERENCE DASHBOARD</div>
+    <div class="slide-num">12 / 15</div>
+  </div>
+
+  <div class="reveal" style="margin-top:4vh">
+    <span class="eyebrow">Based on your Std Feasi format — Emira Shah Alam reference data</span>
+    <h2 class="h-title">Your data, <em>live.</em></h2>
+  </div>
+
+  <div class="dash-frame reveal">
+    <!-- Top bar -->
+    <div class="dash-bar">
+      <div class="dash-bar-left">
+        <div class="dash-bar-title">Project · <em>Emira Shah Alam</em></div>
+        <div class="dash-bar-filters">
+          <span class="dash-pill active">L2 · Parcel 1</span>
+          <span class="dash-pill">PH 1</span>
+          <span class="dash-pill">Base</span>
+          <span class="dash-pill">RM '000</span>
+        </div>
+      </div>
+      <div class="dash-status">Refreshed daily</div>
+    </div>
+
+    <!-- Body -->
+    <div class="dash-body">
+
+      <!-- KPI strip across the top -->
+      <div class="kpi-strip">
+        <div class="kpi">
+          <div class="kpi-label">GDV (Gross)</div>
+          <div class="kpi-value">1,620<span class="unit">M</span></div>
+          <div class="kpi-delta">3 product types</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">GDV (Net)</div>
+          <div class="kpi-value">1,247<span class="unit">M</span></div>
+          <div class="kpi-delta">after 23% discount stack</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">TDC</div>
+          <div class="kpi-value">1,000<span class="unit">M</span></div>
+          <div class="kpi-delta">indicative</div>
+        </div>
+        <div class="kpi highlight">
+          <div class="kpi-label">Net Margin</div>
+          <div class="kpi-value">19.8<span class="unit">%</span></div>
+          <div class="kpi-delta">Net profit RM 247M</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Cost / SF GFA</div>
+          <div class="kpi-value">123.92<span class="unit">RM</span></div>
+          <div class="kpi-delta">Construction · real</div>
+        </div>
+      </div>
+
+      <!-- Mid row: cash flow + scenarios -->
+      <div class="dash-mid">
+
+        <!-- Cost structure -->
+        <div class="chart-panel">
+          <div class="panel-head">
+            <div class="panel-title">TDC by category</div>
+            <div class="panel-meta">RM '000 · indicative</div>
+          </div>
+          <div class="panel-body">
+            <div class="cashflow-chart">
+              <svg viewBox="0 0 400 130" preserveAspectRatio="none">
+                <!-- Horizontal stacked bar showing cost categories -->
+                <!-- Land 75K (7.5%), Construction 127K (12.7%), Prof Fees 156K (15.6%), Authority 76K (7.6%), Sales&Mkt 415K (41.5%), Interest 27K (2.7%), Other 124K (12.4%) -->
+                
+                <!-- Background track -->
+                <rect x="0" y="50" width="400" height="30" fill="rgba(0,0,0,0.04)" rx="2"/>
+                
+                <!-- Land (7.5%) - 0 to 30 -->
+                <rect x="0" y="50" width="30" height="30" fill="#a8853f" opacity="0.85"/>
+                <text x="15" y="42" text-anchor="middle" fill="#5c5851" font-family="JetBrains Mono" font-size="6">Land</text>
+                <text x="15" y="98" text-anchor="middle" fill="#a8853f" font-family="JetBrains Mono" font-size="6">75M</text>
+                
+                <!-- Construction (12.7%) - 30 to 81 -->
+                <rect x="30" y="50" width="51" height="30" fill="#c9a961" opacity="0.85"/>
+                <text x="55" y="42" text-anchor="middle" fill="#5c5851" font-family="JetBrains Mono" font-size="6">Construction</text>
+                <text x="55" y="98" text-anchor="middle" fill="#a8853f" font-family="JetBrains Mono" font-size="6">127M</text>
+                
+                <!-- Prof Fees (15.6%) - 81 to 143 -->
+                <rect x="81" y="50" width="62" height="30" fill="#a8853f" opacity="0.65"/>
+                <text x="112" y="42" text-anchor="middle" fill="#5c5851" font-family="JetBrains Mono" font-size="6">Prof Fees</text>
+                <text x="112" y="98" text-anchor="middle" fill="#a8853f" font-family="JetBrains Mono" font-size="6">156M</text>
+                
+                <!-- Authority (7.6%) - 143 to 173 -->
+                <rect x="143" y="50" width="30" height="30" fill="#c9a961" opacity="0.55"/>
+                <text x="158" y="42" text-anchor="middle" fill="#5c5851" font-family="JetBrains Mono" font-size="6">Auth</text>
+                <text x="158" y="98" text-anchor="middle" fill="#a8853f" font-family="JetBrains Mono" font-size="6">76M</text>
+                
+                <!-- Sales & Marketing (41.5%) - 173 to 339 -->
+                <rect x="173" y="50" width="166" height="30" fill="#a8853f" opacity="0.45"/>
+                <text x="256" y="42" text-anchor="middle" fill="#5c5851" font-family="JetBrains Mono" font-size="6">Sales &amp; Marketing</text>
+                <text x="256" y="98" text-anchor="middle" fill="#a8853f" font-family="JetBrains Mono" font-size="6">415M (% of GDV)</text>
+                
+                <!-- Other + Interest (15.0%) - 339 to 400 -->
+                <rect x="339" y="50" width="61" height="30" fill="#5c5851" opacity="0.35"/>
+                <text x="369" y="42" text-anchor="middle" fill="#5c5851" font-family="JetBrains Mono" font-size="6">Other</text>
+                <text x="369" y="98" text-anchor="middle" fill="#a8853f" font-family="JetBrains Mono" font-size="6">151M</text>
+                
+                <!-- Total marker -->
+                <text x="200" y="20" text-anchor="middle" fill="#1a1814" font-family="Fraunces" font-size="10" font-style="italic">Total Development Cost · RM 1,000M</text>
+                <text x="200" y="120" text-anchor="middle" fill="#5c5851" font-family="JetBrains Mono" font-size="6" letter-spacing="0.1em">DRIVES 19.8% NET MARGIN</text>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Scenarios -->
+        <div class="chart-panel">
+          <div class="panel-head">
+            <div class="panel-title">Scenario comparison · Margin</div>
+            <div class="panel-meta">3 cases</div>
+          </div>
+          <div class="panel-body">
+            <div class="scenario-rows">
+              <div class="scenario-row bear">
+                <div class="scenario-name">Bear</div>
+                <div class="scenario-bar"><div class="scenario-fill" style="width:42%"></div></div>
+                <div class="scenario-val">12.4%</div>
+              </div>
+              <div class="scenario-row base">
+                <div class="scenario-name">Base</div>
+                <div class="scenario-bar"><div class="scenario-fill" style="width:67%"></div></div>
+                <div class="scenario-val">19.8%</div>
+              </div>
+              <div class="scenario-row bull">
+                <div class="scenario-name">Bull</div>
+                <div class="scenario-bar"><div class="scenario-fill" style="width:90%"></div></div>
+                <div class="scenario-val">26.4%</div>
+              </div>
+            </div>
+            <div class="scenario-foot">
+              <div><div class="scenario-foot-key">NET PROFIT</div><div class="scenario-foot-val">155 / 247 / 345 (M)</div></div>
+              <div><div class="scenario-foot-key">GDV NET</div><div class="scenario-foot-val">1,185 / 1,247 / 1,310 (M)</div></div>
+              <div><div class="scenario-foot-key">DRIVERS</div><div class="scenario-foot-val">price · cost · pace</div></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Bottom row -->
+      <div class="dash-bottom">
+
+        <!-- GDV donut -->
+        <div class="chart-panel">
+          <div class="panel-head">
+            <div class="panel-title">Gross GDV by product</div>
+            <div class="panel-meta">RM '000</div>
+          </div>
+          <div class="panel-body">
+            <div class="donut">
+              <svg viewBox="0 0 36 36">
+                <circle cx="18" cy="18" r="14" fill="none" stroke="rgba(0,0,0,0.08)" stroke-width="4"/>
+                <circle cx="18" cy="18" r="14" fill="none" stroke="#a8853f" stroke-width="4"
+                  stroke-dasharray="73.9 88" stroke-dashoffset="0" transform="rotate(-90 18 18)"/>
+                <circle cx="18" cy="18" r="14" fill="none" stroke="#c9a961" stroke-width="4" opacity="0.7"
+                  stroke-dasharray="13.6 88" stroke-dashoffset="-73.9" transform="rotate(-90 18 18)"/>
+                <circle cx="18" cy="18" r="14" fill="none" stroke="#5c5851" stroke-width="4"
+                  stroke-dasharray="0.5 88" stroke-dashoffset="-87.5" transform="rotate(-90 18 18)"/>
+                <text x="18" y="17" text-anchor="middle" fill="#1a1814" font-family="Fraunces" font-size="5" font-style="italic">1,620</text>
+                <text x="18" y="23" text-anchor="middle" fill="#5c5851" font-family="JetBrains Mono" font-size="2.5">M gross</text>
+              </svg>
+              <div class="donut-legend">
+                <div class="donut-legend-row"><span class="swatch" style="background:#a8853f"></span><span class="label">Residential</span><span class="value">1,359</span></div>
+                <div class="donut-legend-row"><span class="swatch" style="background:#c9a961;opacity:0.85"></span><span class="label">Retail</span><span class="value">251</span></div>
+                <div class="donut-legend-row"><span class="swatch" style="background:#5c5851"></span><span class="label">Car Park</span><span class="value">10</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tornado -->
+        <div class="chart-panel">
+          <div class="panel-head">
+            <div class="panel-title">Margin sensitivity</div>
+            <div class="panel-meta">±10% impact</div>
+          </div>
+          <div class="panel-body">
+            <div class="tornado">
+              <div class="tornado-row">
+                <div class="tornado-label">Sell price</div>
+                <div class="tornado-neg"><div class="bar" style="width:85%"></div></div>
+                <div class="tornado-pos"><div class="bar" style="width:90%"></div></div>
+              </div>
+              <div class="tornado-row">
+                <div class="tornado-label">Const cost</div>
+                <div class="tornado-neg"><div class="bar" style="width:70%"></div></div>
+                <div class="tornado-pos"><div class="bar" style="width:65%"></div></div>
+              </div>
+              <div class="tornado-row">
+                <div class="tornado-label">Sales pace</div>
+                <div class="tornado-neg"><div class="bar" style="width:52%"></div></div>
+                <div class="tornado-pos"><div class="bar" style="width:48%"></div></div>
+              </div>
+              <div class="tornado-row">
+                <div class="tornado-label">Land cost</div>
+                <div class="tornado-neg"><div class="bar" style="width:38%"></div></div>
+                <div class="tornado-pos"><div class="bar" style="width:35%"></div></div>
+              </div>
+              <div class="tornado-row">
+                <div class="tornado-label">Int. rate</div>
+                <div class="tornado-neg"><div class="bar" style="width:22%"></div></div>
+                <div class="tornado-pos"><div class="bar" style="width:20%"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Assumptions -->
+        <div class="chart-panel">
+          <div class="panel-head">
+            <div class="panel-title">Key assumptions</div>
+            <div class="panel-meta">Editable</div>
+          </div>
+          <div class="panel-body">
+            <div class="assumptions-table">
+              <span class="ak">Plot ratio</span><span class="av">6.0</span>
+              <span class="ak">Land cost (RM/SF)</span><span class="av">150</span>
+              <span class="ak">Const cost (RM/SF GFA)</span><span class="av">123.92</span>
+              <span class="ak">Residential price (RM/SF)</span><span class="av">650</span>
+              <span class="ak">Retail price (RM/SF)</span><span class="av">1,200</span>
+              <span class="ak">Efficiency (NFA/GFA)</span><span class="av">80%</span>
+              <span class="ak">Bank borrowing</span><span class="av">75%</span>
+              <span class="ak">Interest rate</span><span class="av">4.8%</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="dash-caption reveal">
+    <strong>Indicative</strong>Five modules · KPI Strip · Cost Structure · Scenario Comparison · GDV Mix · Margin Sensitivity · Assumptions
+  </div>
+
+  <div class="chrome-bottom">
+    <div>FEASIBILITY SIMULATION PLATFORM <span class="dot">·</span> MICROSOFT FABRIC + POWER BI</div>
+    <div>FEDELIS</div>
+  </div>
+</section>
+
+<!-- ════════════════ SLIDE 13: PROVEN OUTCOMES ════════════════ -->
+<section class="slide">
+  <div class="chrome-top">
+    <div>12 <span style="color:var(--gold);margin:0 0.5em">·</span> PROVEN OUTCOMES</div>
+    <div class="slide-num">13 / 15</div>
+  </div>
+
+  <div class="reveal" style="margin-top:4vh">
+    <span class="eyebrow">Real estate developers and global enterprises on Fabric</span>
+    <h2 class="h-title">Not the <em>first</em> to do this.</h2>
+  </div>
+
+  <div class="outcomes-grid">
+
+    <!-- Left: ECE Group case -->
+    <div class="outcomes-left reveal">
+      <div class="case-study">
+        <div class="case-head">
+          <div class="case-name">ECE Group <em>· Germany</em></div>
+          <div class="case-meta">Microsoft Customer Story</div>
+        </div>
+        <div class="case-quote">
+          "We wanted to build a data warehouse to last the next 15 years — and in the long run, Microsoft Fabric is the right solution for us."
+        </div>
+        <div class="case-attrib">
+          Jan Hambach · Team Leader, IT Analytics · ECE Group
+        </div>
+        <div class="case-stats">
+          <div>
+            <div class="case-stat-label">Portfolio</div>
+            <div class="case-stat-value">~200 shopping centers across <em>12 countries</em></div>
+          </div>
+          <div>
+            <div class="case-stat-label">Outcome</div>
+            <div class="case-stat-value">50-page investor reports <em>generated from cloud</em>, peak-time reliable</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Forrester ROI -->
+    <div class="chart-panel reveal" style="border-color:var(--gold-dim);background:linear-gradient(180deg,rgba(201,169,97,0.04),transparent);padding:1.5rem">
+      <div class="roi-panel">
+        <div class="roi-header">
+          <div class="roi-title">Total Economic Impact™</div>
+          <div class="roi-source">Forrester · 2024</div>
+        </div>
+        <div class="roi-big">379%</div>
+        <div class="roi-big-sub">ROI over 3 years · Microsoft Fabric</div>
+
+        <div class="roi-stats">
+          <div class="roi-stat">
+            <div class="roi-stat-num">25%</div>
+            <div class="roi-stat-text">Data engineering productivity gain</div>
+          </div>
+          <div class="roi-stat">
+            <div class="roi-stat-num">$4.8M</div>
+            <div class="roi-stat-text">3-yr saving from easier data access for analysts</div>
+          </div>
+          <div class="roi-stat">
+            <div class="roi-stat-num">$9.79M</div>
+            <div class="roi-stat-text">Net Present Value over 3 years (composite organisation)</div>
+          </div>
+          <div class="roi-stat">
+            <div class="roi-stat-num">&lt; 6 mo</div>
+            <div class="roi-stat-text">Typical payback on the Fabric platform investment</div>
+          </div>
+        </div>
+
+        <div class="roi-footnote">Commissioned by Microsoft · Composite of interviewed Fabric customers</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chrome-bottom">
+    <div>FEASIBILITY SIMULATION PLATFORM <span class="dot">·</span> MICROSOFT FABRIC + POWER BI</div>
+    <div>FEDELIS</div>
+  </div>
+</section>
+
+<!-- ════════════════ SLIDE 14: POC ════════════════ -->
+<section class="slide">
+  <div class="chrome-top">
+    <div>13 <span style="color:var(--gold);margin:0 0.5em">·</span> 4-WEEK PROOF OF CONCEPT</div>
+    <div class="slide-num">14 / 15</div>
+  </div>
+
+  <div class="reveal" style="margin-top:5vh">
+    <span class="eyebrow">Low-risk validation using one of your real projects</span>
+    <h2 class="h-title">A <em>4-week</em> proof of concept.</h2>
+  </div>
+
+  <div class="poc">
+    <div class="poc-left">
+      <h3 class="reveal">What we validate</h3>
+      <ul class="poc-list">
+        <li class="reveal"><span class="poc-check">✓</span><span>Simulation engine handles your real project complexity</span></li>
+        <li class="reveal"><span class="poc-check">✓</span><span>Output matches your existing Excel model accurately</span></li>
+        <li class="reveal"><span class="poc-check">✓</span><span>Three roles can collaborate without conflicts</span></li>
+        <li class="reveal"><span class="poc-check">✓</span><span>Refresh and recalc speed meet expectations</span></li>
+        <li class="reveal"><span class="poc-check">✓</span><span>Team can adopt the workflow with minimal training</span></li>
+      </ul>
+
+      <div class="poc-decision reveal">
+        <div class="poc-decision-label">Decision point</div>
+        <div class="poc-decision-text">Go / no-go for full rollout in Week 5, based on <em>real evidence</em> — not promises.</div>
+      </div>
+    </div>
+
+    <div class="weeks">
+      <h3 class="reveal">Weekly milestones</h3>
+      <div class="week reveal">
+        <div class="week-num">1</div>
+        <div class="week-name">Discovery</div>
+        <div class="week-desc">Workshop with QS, IC, Finance — finalize standardized Excel template (v1.0)</div>
+      </div>
+      <div class="week reveal">
+        <div class="week-num">2</div>
+        <div class="week-name">Ingestion</div>
+        <div class="week-desc">Excel pipelines built, Silver cleansing, cross-sheet relationships rebuilt</div>
+      </div>
+      <div class="week reveal">
+        <div class="week-num">3</div>
+        <div class="week-name">Modeling</div>
+        <div class="week-desc">Star schema + DAX measures, side-by-side validation against existing Excel</div>
+      </div>
+      <div class="week reveal">
+        <div class="week-num">4</div>
+        <div class="week-name">Delivery</div>
+        <div class="week-desc">Final dashboard, role-based training for all three teams, executive review</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chrome-bottom">
+    <div>FEASIBILITY SIMULATION PLATFORM <span class="dot">·</span> MICROSOFT FABRIC + POWER BI</div>
+    <div>FEDELIS</div>
+  </div>
+</section>
+
+<!-- ════════════════ SLIDE 15: COMMERCIAL + DECISION ASK ════════════════ -->
+<section class="slide">
+  <div class="chrome-top">
+    <div>14 <span style="color:var(--gold);margin:0 0.5em">·</span> COMMERCIAL &amp; DECISION ASK</div>
+    <div class="slide-num">15 / 15</div>
+  </div>
+
+  <div class="reveal" style="margin-top:4vh">
+    <span class="eyebrow">One-off build · HRDF-claimable training · Annual assurance</span>
+    <h2 class="h-title">Total investment, <em>before HRDF.</em></h2>
+  </div>
+
+  <div class="cta-grid">
+
+    <!-- Left: Fedelis credentials -->
+    <div class="fedelis-card reveal">
+      <div class="fedelis-tagline">Defy. Free. Redefine.</div>
+      <div class="fedelis-tagline-cn">突破 · MENGATASI BATASAN</div>
+
+      <ul class="fedelis-credentials">
+        <li>
+          <span class="cred-icon">✦</span>
+          <span><strong>Only MVP</strong> in Microsoft 365 Modern Work in Malaysia</span>
+        </li>
+        <li>
+          <span class="cred-icon">✦</span>
+          <span><strong>Microsoft Global Training</strong> Partner Award winner</span>
+        </li>
+        <li>
+          <span class="cred-icon">✦</span>
+          <span><strong>Microsoft Modern Work</strong> Solutions Partner</span>
+        </li>
+        <li>
+          <span class="cred-icon">✦</span>
+          <span><strong>HRD Corp accredited</strong> · Bilingual delivery (EN / 中文)</span>
+        </li>
+        <li>
+          <span class="cred-icon">✦</span>
+          <span>Program owner: <strong>Minecraft Education Challenge</strong> Malaysia</span>
+        </li>
+      </ul>
+
+      <div class="fedelis-team">
+        <div>
+          <div class="team-role">Project Development Manager</div>
+          <div class="team-name">Ong Kim Hoo</div>
+        </div>
+        <div>
+          <div class="team-role">Senior Consultant</div>
+          <div class="team-name">Yeu Shun Yee</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Investment + Decision Ask -->
+    <div class="cta-right">
+
+      <div class="reveal">
+        <!-- Investment breakdown rows -->
+        <div style="display:flex;flex-direction:column;gap:0.6rem">
+
+          <div style="display:grid;grid-template-columns:1fr auto;gap:1rem;padding:0.9rem 1rem;border:1px solid var(--line);border-radius:4px;align-items:baseline;background:rgba(0,0,0,0.025)">
+            <div>
+              <div style="font-family:var(--mono);font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:0.2rem">Professional Services · 4 Weeks</div>
+              <div style="font-size:0.78rem;color:var(--ink-muted);font-weight:300">20 man-days · One-off build</div>
+            </div>
+            <div style="font-family:var(--serif);font-size:1.6rem;color:var(--ink);font-weight:400"><span style="color:var(--ink-muted);font-size:0.75rem;margin-right:0.3em">RM</span>30,000</div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr auto;gap:1rem;padding:0.9rem 1rem;border:1px solid var(--line);border-radius:4px;align-items:baseline;background:rgba(0,0,0,0.025)">
+            <div>
+              <div style="font-family:var(--mono);font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:0.2rem">HRDF Claimable Training</div>
+              <div style="font-size:0.78rem;color:var(--ink-muted);font-weight:300">Power BI Pro (2d) + Copilot Power (1d) · From HRDF levy</div>
+            </div>
+            <div style="font-family:var(--serif);font-size:1.6rem;color:var(--ink);font-weight:400"><span style="color:var(--ink-muted);font-size:0.75rem;margin-right:0.3em">RM</span>21,500</div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr auto;gap:1rem;padding:0.9rem 1rem;border:1px solid var(--line);border-radius:4px;align-items:baseline;background:rgba(0,0,0,0.025)">
+            <div>
+              <div style="font-family:var(--mono);font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:0.2rem">Annual Fabric Support</div>
+              <div style="font-size:0.78rem;color:var(--ink-muted);font-weight:300">4-hr SLA · Recurring · Optional</div>
+            </div>
+            <div style="font-family:var(--serif);font-size:1.6rem;color:var(--ink);font-weight:400"><span style="color:var(--ink-muted);font-size:0.75rem;margin-right:0.3em">RM</span>12,000</div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr auto;gap:1rem;padding:1.1rem 1.2rem;border:1px solid var(--gold-dim);border-radius:4px;align-items:baseline;background:linear-gradient(180deg,rgba(201,169,97,0.06),transparent);margin-top:0.3rem">
+            <div>
+              <div style="font-family:var(--mono);font-size:10px;letter-spacing:0.22em;text-transform:uppercase;color:var(--gold);margin-bottom:0.2rem">Total · Before HRDF Claim</div>
+              <div style="font-size:0.78rem;color:var(--ink-muted);font-weight:300;font-style:italic;font-family:var(--serif)">Net cash outlay reduces with HRDF training offset</div>
+            </div>
+            <div style="font-family:var(--serif);font-style:italic;font-size:2.2rem;color:var(--gold);font-weight:400"><span style="font-style:normal;color:var(--ink-muted);font-size:0.85rem;margin-right:0.3em">RM</span>63,500</div>
+          </div>
+        </div>
+
+        <div style="font-size:0.72rem;color:var(--ink-dim);margin-top:0.6rem;font-style:italic;font-family:var(--serif);text-align:right">
+          Microsoft licensing (Fabric F4 ~US$313/mo reserved · Power BI Pro US$14/user/mo) billed separately
+        </div>
+      </div>
+
+      <!-- Decision Ask -->
+      <div class="cta-contact reveal">
+        <div class="cta-contact-text">
+          <strong>Decision ask:</strong> Approval to proceed with the 4-week implementation. We can be on-site at NCT Week 1 within 10 business days of go-ahead.
+        </div>
+        <div class="cta-contact-action">Approve →</div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="chrome-bottom">
+    <div>FEASIBILITY SIMULATION PLATFORM <span class="dot">·</span> MICROSOFT FABRIC + POWER BI</div>
+    <div>FEDELIS <span class="dot">·</span> PREPARED BY ONG KIM HOO</div>
+  </div>
+</section>
+
+</div>
+
+<nav class="nav" id="nav"></nav>
+<div class="hint"><kbd>←</kbd> <kbd>→</kbd> NAVIGATE <span style="color:var(--gold);margin:0 0.4em">·</span> <kbd>F</kbd> FULLSCREEN</div>
+
+<script>
+const slides = document.querySelectorAll('.slide');
+const nav = document.getElementById('nav');
+let current = 0;
+
+function syncSlideVideos() {
+  slides.forEach((slide, i) => {
+    slide.querySelectorAll('video').forEach(video => {
+      if (i === current) {
+        video.currentTime = 0;
+        video.play().catch(() => {});
+      } else {
+        video.pause();
+      }
+    });
+  });
+}
+
+// Build nav dots
+slides.forEach((_, i) => {
+  const dot = document.createElement('button');
+  dot.className = 'nav-dot' + (i === 0 ? ' active' : '');
+  dot.addEventListener('click', () => goTo(i));
+  nav.appendChild(dot);
+});
+
+function goTo(idx) {
+  if (idx < 0 || idx >= slides.length) return;
+  slides[current].classList.remove('active');
+  nav.children[current].classList.remove('active');
+  current = idx;
+  slides[current].classList.add('active');
+  nav.children[current].classList.add('active');
+  syncSlideVideos();
+  // Restart animations
+  slides[current].querySelectorAll('.reveal').forEach(el => {
+    el.style.animation = 'none';
+    el.offsetHeight; // reflow
+    el.style.animation = '';
+  });
+}
+
+syncSlideVideos();
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+    e.preventDefault();
+    goTo(current + 1);
+  } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+    e.preventDefault();
+    goTo(current - 1);
+  } else if (e.key === 'Home') {
+    goTo(0);
+  } else if (e.key === 'End') {
+    goTo(slides.length - 1);
+  } else if (e.key === 'f' || e.key === 'F') {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen();
+    } else {
+      document.exitFullscreen();
+    }
+  }
+});
+
+// Touch swipe
+let touchStartX = 0;
+document.addEventListener('touchstart', (e) => {
+  touchStartX = e.touches[0].clientX;
+});
+document.addEventListener('touchend', (e) => {
+  const diff = touchStartX - e.changedTouches[0].clientX;
+  if (Math.abs(diff) > 50) {
+    goTo(current + (diff > 0 ? 1 : -1));
+  }
+});
+</script>
+
+</body>
+</html>

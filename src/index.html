@@ -1,0 +1,78 @@
+<!-- HTML shell — tab structure, top bar, content containers -->
+<!-- NOTE: This is an inner fragment (no <html>/<head>/<body>) — build.sh wraps it -->
+<div id="app">
+
+  <!-- ── Top bar ─────────────────────────────────────────────────────────── -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="project-label">
+        NCT · <span id="project-name">Emira Shah Alam</span>
+      </div>
+      <nav class="tabs" role="tablist" aria-label="Simulator tabs">
+        <button class="tab-btn active" role="tab" aria-selected="true"
+                aria-controls="panel-simulator" id="tab-simulator"
+                onclick="switchTab('simulator')">Simulator</button>
+        <button class="tab-btn" role="tab" aria-selected="false"
+                aria-controls="panel-cost-detail" id="tab-cost-detail"
+                onclick="switchTab('cost-detail')">Cost Detail</button>
+      </nav>
+      <span class="baseline-badge" id="baseline-badge">Baseline v1.1 · 2026-05-21</span>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn-ghost" id="btn-reset" onclick="handleReset()">Reset</button>
+      <button class="btn-primary" id="btn-export" onclick="handleExport()">Export Scenario</button>
+    </div>
+  </header>
+
+  <!-- ── Content ──────────────────────────────────────────────────────────── -->
+  <main class="content">
+
+    <!-- Tab 1: Simulator ─────────────────────────────────────────────────── -->
+    <section class="tab-panel active" id="panel-simulator"
+             role="tabpanel" aria-labelledby="tab-simulator">
+
+      <!-- Levers column -->
+      <div class="levers-col">
+        <div class="section-label">Assumptions</div>
+        <div class="levers-list" id="levers-container">
+          <!-- Populated by levers.js -->
+        </div>
+      </div>
+
+      <!-- Results column -->
+      <div class="results-col">
+        <div>
+          <div class="section-label">Results</div>
+          <div class="kpi-grid" id="kpi-container">
+            <!-- Populated by kpis.js -->
+          </div>
+        </div>
+        <div class="summary-box" id="summary-container">
+          <!-- Populated by summary.js -->
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Tab 2: Cost Detail ───────────────────────────────────────────────── -->
+    <section class="tab-panel" id="panel-cost-detail"
+             role="tabpanel" aria-labelledby="tab-cost-detail">
+
+      <div class="cost-detail-header">
+        <span class="adjustments-label">Adjustments active:</span>
+        <div class="adjustments-pills" id="adjustments-pills">
+          <!-- Populated by cost-detail.js -->
+        </div>
+        <span class="readonly-badge">Read only</span>
+      </div>
+
+      <div class="cost-table-wrap">
+        <table class="cost-table" id="cost-table">
+          <!-- Populated by cost-detail.js -->
+        </table>
+      </div>
+
+    </section>
+
+  </main>
+</div>

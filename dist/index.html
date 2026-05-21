@@ -1,0 +1,2248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NCT Feasibility Simulator — Emira Shah Alam</title>
+  <style>
+/* ── Reset & root ───────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:         #faf7f1;
+  --bg-2:       #f2ede3;
+  --ink:        #1a1814;
+  --ink-muted:  #5c5851;
+  --ink-dim:    #7a766a;
+  --gold:       #a8853f;
+  --gold-bright:#c9a961;
+  --gold-dim:   rgba(168,133,63,0.12);
+  --line:       rgba(26,24,20,0.10);
+  --line-mid:   rgba(26,24,20,0.20);
+  --positive:   #3ca05a;
+  --negative:   #c83232;
+  --serif: Georgia, 'Times New Roman', serif;
+  --sans:  system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono:  'Courier New', Courier, monospace;
+}
+
+html, body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Ambient warm glow — matches pitch deck */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 50% at 80% 20%, rgba(168,133,63,0.08), transparent 60%),
+    radial-gradient(ellipse 60% 40% at 20% 80%, rgba(168,133,63,0.05), transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── App shell ──────────────────────────────────────────────────────────────── */
+#app {
+  position: relative;
+  z-index: 1;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ── Top bar ────────────────────────────────────────────────────────────────── */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 28px;
+  height: 52px;
+  border-bottom: 1px solid var(--line-mid);
+  background: var(--bg);
+  flex-shrink: 0;
+  gap: 16px;
+}
+
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex: 1;
+  min-width: 0;
+}
+
+.project-label {
+  font-family: var(--serif);
+  font-size: 15px;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.project-label span {
+  color: var(--gold);
+  font-style: italic;
+}
+
+.baseline-badge {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  white-space: nowrap;
+}
+
+/* ── Tabs ───────────────────────────────────────────────────────────────────── */
+.tabs {
+  display: flex;
+  gap: 0;
+  border: 1px solid var(--line-mid);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.tab-btn {
+  padding: 6px 16px;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+
+.tab-btn + .tab-btn {
+  border-left: 1px solid var(--line-mid);
+}
+
+.tab-btn.active {
+  background: var(--ink);
+  color: var(--bg);
+}
+
+/* ── Topbar actions ─────────────────────────────────────────────────────────── */
+.topbar-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.btn-ghost {
+  padding: 6px 14px;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  background: transparent;
+  border: 1px solid var(--line-mid);
+  border-radius: 3px;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.btn-ghost:hover { border-color: var(--gold); color: var(--gold); }
+
+.btn-primary {
+  padding: 6px 16px;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--bg);
+  background: var(--ink);
+  border: 1px solid var(--ink);
+  border-radius: 3px;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.btn-primary:hover { opacity: 0.8; }
+
+/* ── Content area ───────────────────────────────────────────────────────────── */
+.content {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+.tab-panel {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  display: none;
+}
+
+.tab-panel.active {
+  display: flex;
+}
+
+/* ── Simulator tab layout ───────────────────────────────────────────────────── */
+#panel-simulator {
+  flex-direction: row;
+}
+
+.levers-col {
+  width: 42%;
+  min-width: 320px;
+  padding: 24px 28px;
+  overflow-y: auto;
+  border-right: 1px solid var(--line);
+  flex-shrink: 0;
+}
+
+.results-col {
+  flex: 1;
+  padding: 24px 28px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ── Section headers ────────────────────────────────────────────────────────── */
+.section-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 16px;
+}
+
+/* ── Lever cards ────────────────────────────────────────────────────────────── */
+.levers-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.lever-card {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--line);
+  position: relative;
+}
+
+.lever-card::before {
+  content: '';
+  position: absolute;
+  left: -28px;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  transition: background 0.2s;
+}
+
+.lever-card.lever-positive::before { background: var(--gold); }
+.lever-card.lever-negative::before { background: var(--negative); }
+.lever-card.lever-neutral::before  { background: transparent; }
+
+.lever-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  gap: 12px;
+}
+
+.lever-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.lever-unit {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--ink-dim);
+  background: var(--gold-dim);
+  padding: 2px 6px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.lever-control {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.lever-slider {
+  flex: 1;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 2px;
+  background: var(--line-mid);
+  border-radius: 1px;
+  outline: none;
+  cursor: pointer;
+}
+
+.lever-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--ink);
+  border: 2px solid var(--bg);
+  box-shadow: 0 0 0 1px var(--ink);
+  cursor: grab;
+}
+
+.lever-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--ink);
+  border: 2px solid var(--bg);
+  box-shadow: 0 0 0 1px var(--ink);
+  cursor: grab;
+}
+
+.lever-input {
+  width: 62px;
+  padding: 4px 8px;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--ink);
+  background: var(--bg-2);
+  border: 1px solid var(--line-mid);
+  border-radius: 3px;
+  text-align: right;
+  outline: none;
+  flex-shrink: 0;
+}
+
+.lever-input:focus { border-color: var(--gold); }
+
+.lever-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.lever-result {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink-muted);
+}
+
+.lever-delta {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.lever-delta.positive { color: var(--positive); }
+.lever-delta.negative { color: var(--negative); }
+.lever-delta.neutral  { color: var(--ink-dim); }
+
+/* ── KPI grid ───────────────────────────────────────────────────────────────── */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.kpi-card {
+  padding: 18px 20px;
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+}
+
+.kpi-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+}
+
+.kpi-card.kpi-hero { grid-column: span 2; }
+
+.kpi-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  margin-bottom: 8px;
+}
+
+.kpi-value {
+  font-family: var(--serif);
+  font-size: 32px;
+  font-weight: 400;
+  color: var(--ink);
+  line-height: 1;
+  margin-bottom: 6px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.kpi-hero .kpi-value {
+  font-size: 42px;
+  font-style: italic;
+}
+
+.kpi-delta {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.kpi-delta.positive { color: var(--positive); }
+.kpi-delta.negative { color: var(--negative); }
+.kpi-delta.neutral  { color: var(--ink-dim); }
+
+.kpi-baseline {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--ink-dim);
+}
+
+/* Margin-specific accent */
+.kpi-card[data-kpi="margin"].good::before   { background: var(--positive); }
+.kpi-card[data-kpi="margin"].warn::before   { background: var(--gold); }
+.kpi-card[data-kpi="margin"].danger::before { background: var(--negative); }
+
+/* ── Scenario summary ───────────────────────────────────────────────────────── */
+.summary-box {
+  padding: 18px 20px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: transparent;
+}
+
+.summary-text {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 14px;
+  color: var(--ink-muted);
+  line-height: 1.6;
+  margin-bottom: 10px;
+}
+
+.summary-hint {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--gold);
+}
+
+/* ── Cost Detail tab ────────────────────────────────────────────────────────── */
+#panel-cost-detail {
+  flex-direction: column;
+}
+
+.cost-detail-header {
+  padding: 12px 28px;
+  border-bottom: 1px solid var(--line);
+  background: var(--bg);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.adjustments-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+
+.adjustments-pills {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.adjustment-pill {
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 2px 8px;
+  border: 1px solid var(--gold-dim);
+  border-radius: 2px;
+  color: var(--gold);
+  background: var(--gold-dim);
+}
+
+.adjustment-pill.zero {
+  color: var(--ink-dim);
+  border-color: var(--line);
+  background: transparent;
+}
+
+.readonly-badge {
+  margin-left: auto;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  flex-shrink: 0;
+}
+
+.cost-table-wrap {
+  flex: 1;
+  overflow: auto;
+  padding: 0 28px 24px;
+}
+
+.cost-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--ink);
+  min-width: 680px;
+}
+
+.cost-table th {
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  padding: 10px 8px;
+  text-align: right;
+  border-bottom: 1px solid var(--line-mid);
+  font-weight: 400;
+  z-index: 2;
+}
+
+.cost-table th:first-child,
+.cost-table th:nth-child(2) { text-align: left; }
+
+.cost-table td {
+  padding: 6px 8px;
+  vertical-align: middle;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+
+.cost-table td.num { text-align: right; }
+
+/* Row variants */
+.row-header td {
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink);
+  padding-top: 14px;
+  border-bottom: 1px solid var(--line-mid);
+}
+
+.row-aggregate td {
+  font-style: italic;
+  color: var(--ink-muted);
+}
+
+.row-derived td:not(.num) {
+  color: var(--ink-dim);
+}
+
+/* Indent by level */
+.indent-1 .td-label { padding-left: 0; }
+.indent-2 .td-label { padding-left: 20px; }
+.indent-3 .td-label { padding-left: 40px; }
+
+.indicative-badge {
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  color: var(--gold);
+  vertical-align: middle;
+  margin-left: 5px;
+  opacity: 0.8;
+}
+
+.derived-badge {
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  color: var(--ink-dim);
+  vertical-align: middle;
+  margin-left: 5px;
+}
+
+/* Delta colors */
+.delta-positive { color: var(--negative); }  /* cost up = bad */
+.delta-negative { color: var(--positive); }  /* cost down = good */
+.delta-zero     { color: var(--ink-dim); }
+
+/* GDV row: reverse (up = good) */
+.row-gdv .delta-positive { color: var(--positive); }
+.row-gdv .delta-negative { color: var(--negative); }
+
+/* Footer totals */
+.cost-table tfoot tr td {
+  border-top: 1px solid var(--line-mid);
+  border-bottom: none;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.cost-table tfoot .row-total td {
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.cost-table tfoot .row-net-gdv td { color: var(--ink-muted); }
+.cost-table tfoot .row-profit td  { color: var(--ink); }
+
+.cost-table tfoot .row-margin td {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* ── Print ──────────────────────────────────────────────────────────────────── */
+@media print {
+  body { overflow: auto; }
+  #app { height: auto; overflow: visible; }
+  .content { overflow: visible; height: auto; }
+  .tab-panel { position: static; display: none; overflow: visible; }
+  .tab-panel.active { display: block; }
+  .topbar-actions { display: none; }
+  .levers-col { overflow: visible; }
+  .results-col { overflow: visible; }
+  .lever-slider { display: none; }
+  .lever-input { border: none; background: none; text-align: right; }
+  #panel-simulator { flex-direction: column; }
+  .levers-col { border-right: none; border-bottom: 1px solid var(--line-mid); width: 100%; }
+}
+
+/* ── Responsive ─────────────────────────────────────────────────────────────── */
+@media (max-width: 700px) {
+  #panel-simulator { flex-direction: column; }
+  .levers-col { width: 100%; min-width: unset; border-right: none; border-bottom: 1px solid var(--line); overflow: visible; }
+  .results-col { overflow: visible; }
+  .content { overflow-y: auto; }
+  .tab-panel { position: static; height: auto; display: none; }
+  .tab-panel.active { display: flex; }
+  .kpi-card.kpi-hero { grid-column: span 2; }
+}
+  </style>
+</head>
+<body>
+<!-- HTML shell — tab structure, top bar, content containers -->
+<!-- NOTE: This is an inner fragment (no <html>/<head>/<body>) — build.sh wraps it -->
+<div id="app">
+
+  <!-- ── Top bar ─────────────────────────────────────────────────────────── -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="project-label">
+        NCT · <span id="project-name">Emira Shah Alam</span>
+      </div>
+      <nav class="tabs" role="tablist" aria-label="Simulator tabs">
+        <button class="tab-btn active" role="tab" aria-selected="true"
+                aria-controls="panel-simulator" id="tab-simulator"
+                onclick="switchTab('simulator')">Simulator</button>
+        <button class="tab-btn" role="tab" aria-selected="false"
+                aria-controls="panel-cost-detail" id="tab-cost-detail"
+                onclick="switchTab('cost-detail')">Cost Detail</button>
+      </nav>
+      <span class="baseline-badge" id="baseline-badge">Baseline v1.1 · 2026-05-21</span>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn-ghost" id="btn-reset" onclick="handleReset()">Reset</button>
+      <button class="btn-primary" id="btn-export" onclick="handleExport()">Export Scenario</button>
+    </div>
+  </header>
+
+  <!-- ── Content ──────────────────────────────────────────────────────────── -->
+  <main class="content">
+
+    <!-- Tab 1: Simulator ─────────────────────────────────────────────────── -->
+    <section class="tab-panel active" id="panel-simulator"
+             role="tabpanel" aria-labelledby="tab-simulator">
+
+      <!-- Levers column -->
+      <div class="levers-col">
+        <div class="section-label">Assumptions</div>
+        <div class="levers-list" id="levers-container">
+          <!-- Populated by levers.js -->
+        </div>
+      </div>
+
+      <!-- Results column -->
+      <div class="results-col">
+        <div>
+          <div class="section-label">Results</div>
+          <div class="kpi-grid" id="kpi-container">
+            <!-- Populated by kpis.js -->
+          </div>
+        </div>
+        <div class="summary-box" id="summary-container">
+          <!-- Populated by summary.js -->
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Tab 2: Cost Detail ───────────────────────────────────────────────── -->
+    <section class="tab-panel" id="panel-cost-detail"
+             role="tabpanel" aria-labelledby="tab-cost-detail">
+
+      <div class="cost-detail-header">
+        <span class="adjustments-label">Adjustments active:</span>
+        <div class="adjustments-pills" id="adjustments-pills">
+          <!-- Populated by cost-detail.js -->
+        </div>
+        <span class="readonly-badge">Read only</span>
+      </div>
+
+      <div class="cost-table-wrap">
+        <table class="cost-table" id="cost-table">
+          <!-- Populated by cost-detail.js -->
+        </table>
+      </div>
+
+    </section>
+
+  </main>
+</div>
+<script>
+/* ── Data ─────────────────────────────────────────────────────────────── */
+// BASELINE_DATA — Emira Shah Alam, Parcel 1, Phase 1
+// Source: NCT Group Std_Feasi_Sample__ENG.xls (Sales Summary + Cost per SF sheets)
+// All monetary amounts: RM thousands. All percentages: plain numbers (4.8 = 4.8%).
+//
+// Data provenance is flagged on each cost item:
+//   is_estimated: false  — value from client Excel (treat as real)
+//   is_estimated: true   — industry-benchmark estimate pending QS confirmation
+//
+// calibrateEstimatedCosts() is called by data-loader.js after calculations.js loads.
+// It scales all is_estimated items by a uniform factor to hit TARGET_NET_MARGIN_PCT.
+// The calibration factor and resulting KPIs are stored in BASELINE_DATA._calibration.
+
+const TARGET_NET_MARGIN_PCT = 20;  // Industry-typical for Malaysian residential
+
+const BASELINE_DATA = {
+  meta: {
+    project_id: 'EMIRA01',
+    project_name: 'Emira Shah Alam',
+    developer: 'Ribuan Ekuiti Sdn Bhd',
+    parcel: 'Parcel 1',
+    phase: 'PH 1',
+    cost_status: 'Feasibility — Indicative',
+    baseline_version: 'v1.1',
+    refreshed_at: '2026-05-21',
+    currency: 'RM',
+    display_unit: 'thousand',
+    tdc_label: 'Indicative — pending client validation',
+  },
+
+  // ── Sales mix ───────────────────────────────────────────────────────────────
+  // Source: Sales Summary sheet rows 4, 19, 34
+  // Units are fractional (direct from client Excel — keep as-is)
+  // discount_stack: FOUR fields, 23% total applied uniformly across ALL unit types
+  // Bumi is NOT a per-unit discount — it is cost item 20 (derived_pct_gdv) on TDC side
+  sales: [
+    {
+      unit_type_code: 'HR1-T1',
+      property_category: 'Residential',
+      product_name: 'Residential Type 1',
+      no_of_units: 2613.6,
+      built_up_sf: 800,
+      selling_price_per_sf: 650,
+      discount_stack: {
+        early_bird_pct: 5,
+        staff_pct: 5,
+        promotion_pct: 10,
+        others_pct: 3,
+      },
+    },
+    {
+      unit_type_code: 'RETAIL',
+      property_category: 'Retail',
+      product_name: 'Retail Type 1',
+      no_of_units: 209.088,
+      built_up_sf: 1000,
+      selling_price_per_sf: 1200,
+      discount_stack: {
+        early_bird_pct: 5,
+        staff_pct: 5,
+        promotion_pct: 10,
+        others_pct: 3,
+      },
+    },
+    {
+      unit_type_code: 'CARPARK',
+      property_category: 'Car Park',
+      product_name: 'Car Park Type 1',
+      no_of_units: 97.124648,
+      built_up_sf: 100,
+      selling_price_per_sf: 1000,
+      discount_stack: {
+        early_bird_pct: 5,
+        staff_pct: 5,
+        promotion_pct: 10,
+        others_pct: 3,
+      },
+    },
+  ],
+
+  // ── Cost tree (full F_L2 structure, items 4–X) ───────────────────────────────
+  // row_role: 'header' | 'aggregate' | 'leaf'
+  // calc:     'input' | 'rollup' | 'derived_pct_gdv' | 'derived_interest'
+  //
+  // Items 11–15 are structural placeholders (0, no lever effect).
+  // [EST] items with amount_thousand === 0 get a non-zero seed before calibration
+  // so the calibration multiplier can move them. Seeds are industry benchmarks for a
+  // ~890k SF GFA mixed-development project in Selangor.
+  cost_items: [
+    // ── Item 4: Land ──────────────────────────────────────────────────────────
+    { item_no: '4',     parent: null,  level: 1, row_role: 'header',    label: 'TOTAL LAND PURCHASE COST',        amount_thousand: null,   calc: null,               is_estimated: false },
+    // 4.1 REAL: R5 in Project Summary: residential 65,340 + commercial 6,534 + carpark 217.8 = 72,091.8 → 72,092
+    { item_no: '4.1',   parent: '4',   level: 2, row_role: 'leaf',      label: 'Original Land Purchase Cost',     amount_thousand: 72092,  calc: 'input',            is_estimated: false },
+    { item_no: '4.2',   parent: '4',   level: 2, row_role: 'leaf',      label: 'Incidental Land Purchase Cost',   amount_thousand: 1000,   calc: 'input',            is_estimated: true },
+    // 4.3 DERIVED: interest on total land inputs × rate × (dev_period/12) × 0.5
+    // Lever 4 (interest_rate) affects this.
+    { item_no: '4.3',   parent: '4',   level: 2, row_role: 'leaf',      label: 'Land Holding Interest',           amount_thousand: null,   calc: 'derived_interest', is_estimated: false, base: 'land_input_total' },
+    { item_no: '4.4',   parent: '4',   level: 2, row_role: 'leaf',      label: 'Conversion Premium',              amount_thousand: 500,    calc: 'input',            is_estimated: true },
+    { item_no: '4.5',   parent: '4',   level: 2, row_role: 'leaf',      label: 'Lease Extension',                 amount_thousand: 200,    calc: 'input',            is_estimated: true },
+    { item_no: '4.6',   parent: '4',   level: 2, row_role: 'leaf',      label: 'Stamp Duty + Legal',              amount_thousand: 1500,   calc: 'input',            is_estimated: true },
+
+    // ── Item 5: Construction ─────────────────────────────────────────────────
+    // REAL total: RM 110,325k from Cost per SF sheet (awarded construction packages only)
+    // [EST] items below represent additional construction elements not in the awarded packages.
+    // All 5.x items scale proportionally when lever 2 moves (construction_scale factor).
+    { item_no: '5',     parent: null,  level: 1, row_role: 'header',    label: 'TOTAL CONSTRUCTION COST',         amount_thousand: null,   calc: null,               is_estimated: false },
+    // 5.1 REAL: Earthwork & Hoarding from Cost per SF (729,881 + 11,520 VO = 741,401)
+    { item_no: '5.1',   parent: '5',   level: 2, row_role: 'leaf',      label: 'Earthwork & Site Clearance',      amount_thousand: 741,    calc: 'input',            is_estimated: false },
+    { item_no: '5.2',   parent: '5',   level: 2, row_role: 'aggregate', label: 'Sub-Structural',                  amount_thousand: null,   calc: 'rollup',           is_estimated: false },
+    // 5.2.1 REAL: Piling + Pilecap + Starter Bar = 5,200,000 + 132,571 VO = 5,332,571
+    { item_no: '5.2.1', parent: '5.2', level: 3, row_role: 'leaf',      label: 'Piling, Pilecap & Starter Bar',   amount_thousand: 5333,   calc: 'input',            is_estimated: false },
+    { item_no: '5.2.2', parent: '5.2', level: 3, row_role: 'leaf',      label: 'Retaining Wall',                  amount_thousand: 500,    calc: 'input',            is_estimated: true },
+    // 5.3 REAL: Main Building Works = 107,500,000 - 3,263,339 VO = 104,236,661
+    { item_no: '5.3',   parent: '5',   level: 2, row_role: 'leaf',      label: 'Main Building Works',             amount_thousand: 104237, calc: 'input',            is_estimated: false },
+    { item_no: '5.4',   parent: '5',   level: 2, row_role: 'leaf',      label: 'Interior Design',                 amount_thousand: 0,      calc: 'input',            is_estimated: true },
+    // 5.5–5.11: seeded with industry-benchmark values so calibration can scale them.
+    // Actual values are the calibrated results, not these raw seeds.
+    { item_no: '5.5',   parent: '5',   level: 2, row_role: 'leaf',      label: 'Landscaping Works',               amount_thousand: 4000,   calc: 'input',            is_estimated: true },
+    { item_no: '5.6',   parent: '5',   level: 2, row_role: 'leaf',      label: 'Infrastructure Works',            amount_thousand: 10000,  calc: 'input',            is_estimated: true },
+    { item_no: '5.7',   parent: '5',   level: 2, row_role: 'leaf',      label: 'Miscellaneous',                   amount_thousand: 2000,   calc: 'input',            is_estimated: true },
+    { item_no: '5.8',   parent: '5',   level: 2, row_role: 'leaf',      label: 'Show Unit',                       amount_thousand: 2000,   calc: 'input',            is_estimated: true },
+    { item_no: '5.9',   parent: '5',   level: 2, row_role: 'leaf',      label: 'Preliminaries',                   amount_thousand: 10000,  calc: 'input',            is_estimated: true },
+    { item_no: '5.10',  parent: '5',   level: 2, row_role: 'leaf',      label: 'Project Contingency',             amount_thousand: 5500,   calc: 'input',            is_estimated: true },
+    { item_no: '5.11',  parent: '5',   level: 2, row_role: 'leaf',      label: 'Mechanical & Engineering',        amount_thousand: 11000,  calc: 'input',            is_estimated: true },
+
+    // ── Item 6: Professional Fees ────────────────────────────────────────────
+    { item_no: '6',     parent: null,  level: 1, row_role: 'header',    label: 'PROFESSIONAL FEES',               amount_thousand: null,   calc: null,               is_estimated: false },
+    { item_no: '6.1',   parent: '6',   level: 2, row_role: 'leaf',      label: 'Architect',                       amount_thousand: 3500,   calc: 'input',            is_estimated: true },
+    { item_no: '6.2',   parent: '6',   level: 2, row_role: 'leaf',      label: 'Quantity Surveyor',               amount_thousand: 1200,   calc: 'input',            is_estimated: true },
+    { item_no: '6.3',   parent: '6',   level: 2, row_role: 'leaf',      label: 'C&S Engineer',                    amount_thousand: 1500,   calc: 'input',            is_estimated: true },
+    { item_no: '6.4',   parent: '6',   level: 2, row_role: 'leaf',      label: 'M&E Engineer',                    amount_thousand: 1100,   calc: 'input',            is_estimated: true },
+    { item_no: '6.5',   parent: '6',   level: 2, row_role: 'leaf',      label: 'ID Consultant',                   amount_thousand: 800,    calc: 'input',            is_estimated: true },
+    // 6.6 REAL: Soil Investigation from Cost per SF (19,990 - 5,885 VO = 14,105)
+    { item_no: '6.6',   parent: '6',   level: 2, row_role: 'leaf',      label: 'Soil Investigation',              amount_thousand: 14,     calc: 'input',            is_estimated: false },
+    { item_no: '6.7',   parent: '6',   level: 2, row_role: 'leaf',      label: 'Planner',                         amount_thousand: 400,    calc: 'input',            is_estimated: true },
+
+    // ── Item 7: Authority Contribution ──────────────────────────────────────
+    { item_no: '7',     parent: null,  level: 1, row_role: 'header',    label: 'AUTHORITY CONTRIBUTION',          amount_thousand: null,   calc: null,               is_estimated: false },
+    { item_no: '7.1',   parent: '7',   level: 2, row_role: 'leaf',      label: 'TNB Contribution',                amount_thousand: 1200,   calc: 'input',            is_estimated: true },
+    { item_no: '7.2',   parent: '7',   level: 2, row_role: 'leaf',      label: 'Syabas Contribution',             amount_thousand: 800,    calc: 'input',            is_estimated: true },
+    { item_no: '7.3',   parent: '7',   level: 2, row_role: 'leaf',      label: 'IWK Contribution',                amount_thousand: 600,    calc: 'input',            is_estimated: true },
+    { item_no: '7.4',   parent: '7',   level: 2, row_role: 'leaf',      label: 'Bomba Contribution',              amount_thousand: 300,    calc: 'input',            is_estimated: true },
+    { item_no: '7.5',   parent: '7',   level: 2, row_role: 'leaf',      label: 'Telekom + Others',                amount_thousand: 300,    calc: 'input',            is_estimated: true },
+    { item_no: '7.6',   parent: '7',   level: 2, row_role: 'leaf',      label: 'Road & Drain Contribution',       amount_thousand: 1000,   calc: 'input',            is_estimated: true },
+
+    // ── Items 8–16: Various direct costs ────────────────────────────────────
+    { item_no: '8',     parent: null,  level: 1, row_role: 'leaf',      label: 'Plan Submission Fees',            amount_thousand: 300,    calc: 'input',            is_estimated: true },
+    { item_no: '9',     parent: null,  level: 1, row_role: 'leaf',      label: 'Plan, Survey & Strata Title',     amount_thousand: 500,    calc: 'input',            is_estimated: true },
+    // 10 REAL: Assumption R25 from client Excel = 2,247 thousand (1.5% of construction est.)
+    { item_no: '10',    parent: null,  level: 1, row_role: 'leaf',      label: 'Project Management Fees',         amount_thousand: 2247,   calc: 'input',            is_estimated: false },
+    { item_no: '11',    parent: null,  level: 1, row_role: 'leaf',      label: 'Others 1',                        amount_thousand: 0,      calc: 'input',            is_estimated: true },
+    { item_no: '12',    parent: null,  level: 1, row_role: 'leaf',      label: 'Others 2',                        amount_thousand: 0,      calc: 'input',            is_estimated: true },
+    { item_no: '13',    parent: null,  level: 1, row_role: 'leaf',      label: 'Others 3',                        amount_thousand: 0,      calc: 'input',            is_estimated: true },
+    { item_no: '14',    parent: null,  level: 1, row_role: 'leaf',      label: 'Others 4',                        amount_thousand: 0,      calc: 'input',            is_estimated: true },
+    { item_no: '15',    parent: null,  level: 1, row_role: 'leaf',      label: 'GST Provision',                   amount_thousand: 0,      calc: 'input',            is_estimated: false },
+    { item_no: '16',    parent: null,  level: 1, row_role: 'leaf',      label: 'Development Contingency',         amount_thousand: 3000,   calc: 'input',            is_estimated: true },
+
+    // ── Items 17–21: Sales & Marketing ──────────────────────────────────────
+    { item_no: '17',    parent: null,  level: 1, row_role: 'header',    label: 'SALES & MARKETING',               amount_thousand: null,   calc: null,               is_estimated: false },
+    // 17.1 + 18: lever 5 splits its delta pp between these two pcts (+0.5pp each per +1pp lever)
+    { item_no: '17.1',  parent: '17',  level: 2, row_role: 'leaf',      label: 'Advertising & Promotion',         amount_thousand: null,   calc: 'derived_pct_gdv',  is_estimated: false, pct: 'advertising_promotion_pct_of_gdv' },
+    { item_no: '18',    parent: null,  level: 1, row_role: 'leaf',      label: 'Agent Commission',                amount_thousand: null,   calc: 'derived_pct_gdv',  is_estimated: false, pct: 'agent_commission_pct_of_gdv' },
+    { item_no: '19',    parent: null,  level: 1, row_role: 'leaf',      label: 'Sales Gallery',                   amount_thousand: 1500,   calc: 'input',            is_estimated: true },
+    // 20: lever 6 adjusts bumi_contribution_pct_of_gdv (additive pp)
+    { item_no: '20',    parent: null,  level: 1, row_role: 'leaf',      label: 'Bumi Contribution',               amount_thousand: null,   calc: 'derived_pct_gdv',  is_estimated: false, pct: 'bumi_contribution_pct_of_gdv' },
+    // 21 REAL: Assumption R29-R30: 3% for GDV < RM250M; 2% for ≥RM250M
+    { item_no: '21',    parent: null,  level: 1, row_role: 'leaf',      label: 'Administration Fees',             amount_thousand: null,   calc: 'derived_pct_gdv',  is_estimated: false, pct: 'admin_fees_pct_of_gdv' },
+
+    // ── Item X: Construction Interest (virtual — shows finance cost for transparency) ──
+    // Formula: construction_total × bank_borrowing_pct × interest_rate × (sales_period/12) × 0.5
+    // Lever 3 (sales_period) and Lever 4 (interest_rate) affect this.
+    // Simplified: assumes linear drawdown; real model needs monthly amortization (v1.x TODO).
+    { item_no: 'X',     parent: null,  level: 1, row_role: 'leaf',      label: 'Construction Interest',           amount_thousand: null,   calc: 'derived_interest', is_estimated: false, base: 'construction_borrowing' },
+  ],
+
+  // ── Derived item coefficients ────────────────────────────────────────────────
+  // REAL values from client Excel; [EST] values are industry estimates.
+  derived_params: {
+    // Construction (REAL from Cost per SF sheet)
+    construction_total_gfa_sf: 890260,
+    construction_cost_per_sf_gfa: 123.92,   // lever 2 multiplies this
+    total_nfa_sf: 420530,
+    cost_per_sf_nfa: 262.35,                 // informational only
+
+    // S&M percentages of net GDV:
+    // lever 5 (+pp) splits its delta equally between advertising and commission (+0.5pp each)
+    advertising_promotion_pct_of_gdv: 2.0,  // lever 5 adds delta/2
+    agent_commission_pct_of_gdv: 2.5,       // lever 5 adds delta/2
+    bumi_contribution_pct_of_gdv: 2.0,      // lever 6 adds delta (full pp)
+    // REAL: Assumption R29-R30 from client Excel (3% for this project scale)
+    admin_fees_pct_of_gdv: 3.0,
+  },
+
+  // ── Financing assumptions ────────────────────────────────────────────────────
+  financing: {
+    bank_borrowing_pct: 75,
+    equity_pct: 25,
+    interest_rate_pct: 4.8,                // lever 4 adds delta (pp)
+    development_period_months: 36,
+    sales_period_months: 24,               // lever 3 multiplies this
+  },
+
+  // ── Project-level (informational) ───────────────────────────────────────────
+  project: {
+    plot_ratio: 6.0,
+    efficiency_nfa_over_gfa_pct: 80,
+  },
+
+  // Populated by calibrateEstimatedCosts() in calculations.js — do not edit manually.
+  _calibration: null,
+};
+
+// All levers at zero — baseline scenario
+const ZERO_LEVERS = {
+  selling_price: 0,      // % multiplier (lever 1)
+  construction_cost: 0,  // % multiplier (lever 2)
+  sales_period: 0,       // % multiplier (lever 3)
+  interest_rate: 0,      // pp additive  (lever 4)
+  ap_commission: 0,      // pp additive  (lever 5) — splits between advertising + agent
+  bumi_discount: 0,      // pp additive  (lever 6) — adjusts bumi_contribution_pct
+};
+
+// Node.js compatibility
+// calculations.js — pure functions, no DOM, no globals
+// All functions take (baseline, levers) as arguments and return new objects.
+// Safe to unit-test and future-portable to Fabric UDF (Fabric supports JS).
+//
+// Money convention: all internal values in RM thousands.
+// Percentage convention: 4.8 means 4.8% (not 0.048). Convert at point of use.
+
+// ─── Lever application ────────────────────────────────────────────────────────
+
+// Lever 1 (selling_price): % multiplier on selling_price_per_sf
+// Lever 2 (construction_cost): % multiplier on construction_cost_per_sf_gfa
+// Lever 3 (sales_period): % multiplier on sales_period_months
+// Lever 4 (interest_rate): pp additive on interest_rate_pct
+// Lever 5 (ap_commission): pp additive split equally between advertising + agent commission
+// Lever 6 (bumi_discount): pp additive on bumi_contribution_pct_of_gdv (cost item 20)
+//
+// Bumi is NOT in the per-unit discount_stack (see feedback CLAUDE_CODE_FEEDBACK.md §3).
+// It lives as cost item 20, a TDC line item derived as % of net GDV.
+//
+// The discount_stack in sales[] is uniform: 23% across all unit types (early_bird 5% +
+// staff 5% + promotion 10% + others 3%). No Bumi discount in per-unit math.
+function applyLevers(baseline, levers) {
+  return {
+    ...baseline,
+    sales: baseline.sales.map(s => ({
+      ...s,
+      selling_price_per_sf: s.selling_price_per_sf * (1 + levers.selling_price / 100),
+      // discount_stack is uniform and fixed (no lever directly changes it)
+    })),
+    derived_params: {
+      ...baseline.derived_params,
+      construction_cost_per_sf_gfa:
+        baseline.derived_params.construction_cost_per_sf_gfa * (1 + levers.construction_cost / 100),
+      // Lever 5 splits its delta equally: +1pp total → +0.5pp each
+      advertising_promotion_pct_of_gdv:
+        baseline.derived_params.advertising_promotion_pct_of_gdv + levers.ap_commission / 2,
+      agent_commission_pct_of_gdv:
+        baseline.derived_params.agent_commission_pct_of_gdv + levers.ap_commission / 2,
+      // Lever 6 adjusts bumi contribution pct (cost item 20)
+      bumi_contribution_pct_of_gdv:
+        baseline.derived_params.bumi_contribution_pct_of_gdv + levers.bumi_discount,
+    },
+    financing: {
+      ...baseline.financing,
+      interest_rate_pct: baseline.financing.interest_rate_pct + levers.interest_rate,
+      sales_period_months:
+        baseline.financing.sales_period_months * (1 + levers.sales_period / 100),
+    },
+  };
+}
+
+// ─── GDV ─────────────────────────────────────────────────────────────────────
+
+function calculateGDV(data) {
+  const gross_gdv_thousand = data.sales.reduce((sum, s) => {
+    return sum + (s.no_of_units * s.built_up_sf * s.selling_price_per_sf) / 1000;
+  }, 0);
+
+  const net_gdv_thousand = data.sales.reduce((sum, s) => {
+    const gross = (s.no_of_units * s.built_up_sf * s.selling_price_per_sf) / 1000;
+    const total_discount_pct = Object.values(s.discount_stack).reduce((a, b) => a + b, 0);
+    return sum + gross * (1 - total_discount_pct / 100);
+  }, 0);
+
+  return { gross_gdv_thousand, net_gdv_thousand };
+}
+
+// ─── Cost item expansion ──────────────────────────────────────────────────────
+
+// Returns a new array with every cost_item annotated with:
+//   baseline_amount_thousand, adjusted_amount_thousand, delta_thousand, delta_pct
+//
+// Two-pass approach:
+//   Pass 1: compute all non-rollup items
+//   Pass 2: compute rollup aggregates (e.g. 5.2) from their children's pass-1 values
+//
+// Derived items:
+//   4.3 (Land Holding Interest):
+//     land_input_total × rate × (dev_period_months/12) × 0.5
+//     land_input_total = sum of all 4.x items with calc:'input'
+//     Simplified average-outstanding approx (v1; real model needs monthly amortization).
+//
+//   17.1, 18, 20, 21 (S&M and Bumi, % of net GDV):
+//     baseline amount = baseline net GDV × baseline pct
+//     adjusted amount = adjusted net GDV × adjusted pct
+//
+//   X (Construction Interest):
+//     construction_total × bank_borrowing_pct × rate × (sales_period_months/12) × 0.5
+//     Uses derived_params construction total, not sum of 5.x items.
+//     Lever 3 (sales_period) changes how long interest accrues.
+//     Lever 4 (interest_rate) changes the rate.
+//
+// Construction scaling (all 5.x items with calc:'input'):
+//   construction_scale = adj_total / baseline_total
+//   where total = construction_total_gfa_sf × construction_cost_per_sf_gfa / 1000
+//   Every 5.x input item (including [EST] items) scales by this factor.
+//   Financially correct: a contractor price reduction applies to the whole bill.
+function expandCostItems(adjusted, baseline, net_gdv_thousand, baseline_net_gdv_thousand) {
+  // Construction totals (from derived_params, not sum of 5.x items)
+  const construction_total =
+    (adjusted.derived_params.construction_total_gfa_sf *
+      adjusted.derived_params.construction_cost_per_sf_gfa) / 1000;
+
+  const baseline_construction_total =
+    (baseline.derived_params.construction_total_gfa_sf *
+      baseline.derived_params.construction_cost_per_sf_gfa) / 1000;
+
+  const construction_scale = construction_total / baseline_construction_total;
+
+  // Land input total (all 4.x items with calc:'input') — base for land holding interest
+  const land_input_total = baseline.cost_items
+    .filter(i => i.parent === '4' && i.calc === 'input')
+    .reduce((s, i) => s + (i.amount_thousand ?? 0), 0);
+
+  // Land holding interest: all land inputs × rate × (dev_period/12) × 0.5
+  const baseline_land_interest =
+    land_input_total *
+    (baseline.financing.interest_rate_pct / 100) *
+    (baseline.financing.development_period_months / 12) *
+    0.5;
+
+  const adjusted_land_interest =
+    land_input_total *
+    (adjusted.financing.interest_rate_pct / 100) *
+    (adjusted.financing.development_period_months / 12) *
+    0.5;
+
+  // Construction interest: construction_borrowing × rate × (sales_period/12) × 0.5
+  const baseline_construction_borrowing =
+    baseline_construction_total * (baseline.financing.bank_borrowing_pct / 100);
+  const adjusted_construction_borrowing =
+    construction_total * (adjusted.financing.bank_borrowing_pct / 100);
+
+  const baseline_construction_interest =
+    baseline_construction_borrowing *
+    (baseline.financing.interest_rate_pct / 100) *
+    (baseline.financing.sales_period_months / 12) *
+    0.5;
+
+  const adjusted_construction_interest =
+    adjusted_construction_borrowing *
+    (adjusted.financing.interest_rate_pct / 100) *
+    (adjusted.financing.sales_period_months / 12) *
+    0.5;
+
+  // Pass 1 — compute all non-rollup items
+  const pass1 = baseline.cost_items.map(item => {
+    let baselineAmt = item.amount_thousand;
+    let adjustedAmt = item.amount_thousand;
+
+    if (item.calc === 'input') {
+      if (item.item_no === '5' || item.item_no.startsWith('5.')) {
+        // All 5.x input items scale with lever 2
+        adjustedAmt = baselineAmt * construction_scale;
+      }
+      // All other input items are fixed (no lever moves them directly)
+    }
+
+    if (item.item_no === '4.3') {
+      baselineAmt = baseline_land_interest;
+      adjustedAmt = adjusted_land_interest;
+    }
+
+    if (item.item_no === 'X') {
+      baselineAmt = baseline_construction_interest;
+      adjustedAmt = adjusted_construction_interest;
+    }
+
+    if (item.calc === 'derived_pct_gdv') {
+      const basePct = baseline.derived_params[item.pct];
+      const adjPct = adjusted.derived_params[item.pct];
+      baselineAmt = baseline_net_gdv_thousand * (basePct / 100);
+      adjustedAmt = net_gdv_thousand * (adjPct / 100);
+    }
+
+    // rollup computed in pass 2
+    if (item.calc === 'rollup') {
+      baselineAmt = null;
+      adjustedAmt = null;
+    }
+
+    const delta =
+      adjustedAmt !== null && baselineAmt !== null ? adjustedAmt - baselineAmt : null;
+    const deltaPct =
+      delta !== null && baselineAmt !== null && baselineAmt !== 0
+        ? (delta / baselineAmt) * 100
+        : null;
+
+    return {
+      ...item,
+      baseline_amount_thousand: baselineAmt,
+      adjusted_amount_thousand: adjustedAmt,
+      delta_thousand: delta,
+      delta_pct: deltaPct,
+    };
+  });
+
+  // Pass 2 — rollup aggregates: sum of direct non-rollup children
+  return pass1.map(item => {
+    if (item.calc !== 'rollup') return item;
+
+    const children = pass1.filter(c => c.parent === item.item_no && c.calc !== 'rollup');
+    const baselineSum = children.reduce((s, c) => s + (c.baseline_amount_thousand ?? 0), 0);
+    const adjustedSum = children.reduce((s, c) => s + (c.adjusted_amount_thousand ?? 0), 0);
+    const delta = adjustedSum - baselineSum;
+    const deltaPct = baselineSum !== 0 ? (delta / baselineSum) * 100 : null;
+
+    return {
+      ...item,
+      baseline_amount_thousand: baselineSum,
+      adjusted_amount_thousand: adjustedSum,
+      delta_thousand: delta,
+      delta_pct: deltaPct,
+    };
+  });
+}
+
+// ─── KPI computation ──────────────────────────────────────────────────────────
+
+// TDC: sum of all items that carry a direct cost value.
+//   Excluded: 'header' rows (section titles), 'rollup' aggregates (computed from children).
+//   Included: 'leaf' AND 'aggregate-with-calc-input' items (e.g. 5.1, 5.3 which are
+//   marked aggregate in F_L2 but have no children in v1 and carry a real amount).
+function calculateKPIs(baseline, levers) {
+  const adjusted = applyLevers(baseline, levers);
+  const { net_gdv_thousand } = calculateGDV(adjusted);
+  const { net_gdv_thousand: baseline_net_gdv_thousand } = calculateGDV(baseline);
+
+  const expanded = expandCostItems(
+    adjusted,
+    baseline,
+    net_gdv_thousand,
+    baseline_net_gdv_thousand,
+  );
+
+  const tdc = expanded
+    .filter(
+      i =>
+        i.row_role !== 'header' &&
+        i.calc !== 'rollup' &&
+        i.adjusted_amount_thousand !== null,
+    )
+    .reduce((sum, i) => sum + i.adjusted_amount_thousand, 0);
+
+  const net_profit = net_gdv_thousand - tdc;
+  const margin_pct = (net_profit / net_gdv_thousand) * 100;
+
+  return {
+    gdv_thousand: net_gdv_thousand,
+    tdc_thousand: tdc,
+    net_profit_thousand: net_profit,
+    margin_pct,
+    cost_detail: expanded,
+    adjusted,
+  };
+}
+
+// ─── Calibration ─────────────────────────────────────────────────────────────
+
+// Scales all is_estimated cost items by a uniform factor so that the baseline
+// (all levers at zero) produces exactly target_margin_pct.
+//
+// Approach:
+//   1. Compute net GDV from current sales data (inline, no dependency on calculateGDV)
+//   2. Compute target TDC = net_gdv × (1 - target_margin/100)
+//   3. Compute "fixed TDC" — sum of all non-estimated items including derived items
+//   4. EST items must account for: target_TDC - fixed_TDC
+//   5. scale_factor = needed / current_est_sum
+//   6. Apply to each is_estimated item in-place (mutates baseline.cost_items)
+//
+// Called once by data-loader.js at startup. Results stored in baseline._calibration.
+//
+// NOTE: items with amount_thousand === 0 remain 0 after calibration (0 × anything = 0).
+// This is intentional — 0 signals "genuinely not applicable" (e.g. GST, Interior Design).
+// Non-zero [EST] seeds absorb the calibration proportionally.
+function calibrateEstimatedCosts(baseline, target_margin_pct) {
+  // Compute net GDV inline (avoids circular dependency with calculateGDV which isn't loaded yet)
+  const net_gdv = baseline.sales.reduce((sum, s) => {
+    const gross = (s.no_of_units * s.built_up_sf * s.selling_price_per_sf) / 1000;
+    const disc = Object.values(s.discount_stack).reduce((a, b) => a + b, 0);
+    return sum + gross * (1 - disc / 100);
+  }, 0);
+
+  const target_tdc = net_gdv * (1 - target_margin_pct / 100);
+
+  // Fixed non-estimated input items (real data, never scaled)
+  const fixed_input_sum = baseline.cost_items
+    .filter(i => !i.is_estimated && i.calc === 'input' && i.amount_thousand !== null)
+    .reduce((s, i) => s + i.amount_thousand, 0);
+
+  // Land holding interest at baseline (derived, fixed)
+  const land_input_total = baseline.cost_items
+    .filter(i => i.parent === '4' && i.calc === 'input')
+    .reduce((s, i) => s + (i.amount_thousand ?? 0), 0);
+  const land_interest =
+    land_input_total *
+    (baseline.financing.interest_rate_pct / 100) *
+    (baseline.financing.development_period_months / 12) *
+    0.5;
+
+  // GDV-derived items at baseline (fixed pcts × fixed net_gdv)
+  const derived_gdv_sum = ['advertising_promotion_pct_of_gdv', 'agent_commission_pct_of_gdv',
+    'bumi_contribution_pct_of_gdv', 'admin_fees_pct_of_gdv']
+    .reduce((s, key) => s + net_gdv * (baseline.derived_params[key] / 100), 0);
+
+  // Construction interest at baseline
+  const baseline_construction_total =
+    (baseline.derived_params.construction_total_gfa_sf *
+      baseline.derived_params.construction_cost_per_sf_gfa) / 1000;
+  const construction_interest =
+    baseline_construction_total *
+    (baseline.financing.bank_borrowing_pct / 100) *
+    (baseline.financing.interest_rate_pct / 100) *
+    (baseline.financing.sales_period_months / 12) *
+    0.5;
+
+  // Estimated input items (scalable)
+  const est_items = baseline.cost_items.filter(
+    i => i.is_estimated && i.calc === 'input' && i.amount_thousand !== null && i.amount_thousand > 0,
+  );
+  const current_est_sum = est_items.reduce((s, i) => s + i.amount_thousand, 0);
+
+  const fixed_tdc = fixed_input_sum + land_interest + derived_gdv_sum + construction_interest;
+  const needed_from_est = target_tdc - fixed_tdc;
+  const scale_factor = current_est_sum > 0 ? needed_from_est / current_est_sum : 1;
+
+  // Apply scale in-place — calibrated values replace raw seeds
+  est_items.forEach(item => {
+    item.amount_thousand = item.amount_thousand * scale_factor;
+  });
+
+  // Record results for reporting (Test 9 in reconciliation.js reads this)
+  baseline._calibration = {
+    target_margin_pct,
+    scale_factor: Math.round(scale_factor * 100) / 100,
+    net_gdv_thousand: Math.round(net_gdv),
+    target_tdc_thousand: Math.round(target_tdc),
+    fixed_tdc_thousand: Math.round(fixed_tdc),
+    est_seed_sum_thousand: Math.round(current_est_sum),
+    est_calibrated_sum_thousand: Math.round(needed_from_est),
+  };
+
+  return scale_factor;
+}
+
+// Node.js compatibility
+// formatters.js — display formatting utilities
+// Intl.NumberFormat instances created once and reused (Gotcha 6: new instance per call is slow).
+// All formatting functions are pure: no DOM reads, no global state.
+
+// RM currency formatter (millions, 1 decimal): "RM 1,611.0M"
+const _fmtMillions = new Intl.NumberFormat('en-MY', {
+  minimumFractionDigits: 1,
+  maximumFractionDigits: 1,
+});
+
+// RM currency formatter (thousands, 0 decimals): "1,611,000"
+const _fmtThousands = new Intl.NumberFormat('en-MY', {
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 0,
+});
+
+// RM currency formatter (plain number, up to 2 decimals): "682.50"
+const _fmtDecimal2 = new Intl.NumberFormat('en-MY', {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+
+// Percentage formatter (1 decimal): "22.6%"
+const _fmtPct1 = new Intl.NumberFormat('en-MY', {
+  minimumFractionDigits: 1,
+  maximumFractionDigits: 1,
+});
+
+// Format RM thousands value for KPI display
+// amount_thousand: value in RM thousands (e.g. 1611000 = RM 1,611M)
+// mode: 'M' (millions, default) | 'K' (thousands)
+function formatRM(amount_thousand, mode) {
+  if (amount_thousand === null || amount_thousand === undefined) return '—';
+  if (mode === 'K') {
+    return 'RM ' + _fmtThousands.format(amount_thousand) + 'K';
+  }
+  return 'RM ' + _fmtMillions.format(amount_thousand / 1000) + 'M';
+}
+
+// Format a delta for KPI cards: "+RM 14M" or "-RM 6M" or "(baseline)"
+function formatRMDelta(delta_thousand) {
+  if (delta_thousand === null || delta_thousand === undefined) return '';
+  if (Math.abs(delta_thousand) < 0.5) return '(baseline)';
+  const sign = delta_thousand > 0 ? '+' : '';
+  return sign + formatRM(delta_thousand);
+}
+
+// Format a percentage delta: "+1.2pp" or "-0.8pp"
+function formatPctDelta(delta_pct) {
+  if (delta_pct === null || delta_pct === undefined) return '';
+  if (Math.abs(delta_pct) < 0.05) return '(baseline)';
+  const sign = delta_pct > 0 ? '+' : '';
+  return sign + _fmtPct1.format(delta_pct) + 'pp';
+}
+
+// Format a cost-detail amount in thousands (right-aligned table cell)
+function formatCostAmt(amount_thousand) {
+  if (amount_thousand === null || amount_thousand === undefined) return '—';
+  return _fmtThousands.format(Math.round(amount_thousand));
+}
+
+// Format a cost-detail delta: "(=)" | "+1,234" | "-567"
+function formatCostDelta(delta_thousand) {
+  if (delta_thousand === null || delta_thousand === undefined) return '';
+  if (Math.abs(delta_thousand) < 1) return '(=)';
+  const sign = delta_thousand > 0 ? '+' : '';
+  return sign + _fmtThousands.format(Math.round(delta_thousand));
+}
+
+// Format a selling price: "RM 682.50 / SF"
+function formatPricePerSF(price) {
+  return 'RM ' + _fmtDecimal2.format(price) + ' / SF';
+}
+
+// Format a percentage for display: "22.6%"
+function formatPct(pct, decimals) {
+  const d = decimals ?? 1;
+  return pct.toFixed(d) + '%';
+}
+
+// Node.js compatibility
+// data-loader.js — pluggable data source
+// v1: applies calibration to embedded BASELINE_DATA, then returns it.
+// v2 (future): swap only this file to fetch from SharePoint JSON.
+// v3 (future): swap only this file to call Fabric REST API with OAuth.
+//
+// calibrateEstimatedCosts() scales [EST] cost items to hit TARGET_NET_MARGIN_PCT (20%).
+// It mutates BASELINE_DATA in place — call loadBaseline() only once.
+
+let _loaded = false;
+
+async function loadBaseline() {
+  if (!_loaded) {
+    // calibrateEstimatedCosts and TARGET_NET_MARGIN_PCT are defined in
+    // calculations.js and baseline.js respectively (loaded before this file).
+    calibrateEstimatedCosts(BASELINE_DATA, TARGET_NET_MARGIN_PCT);
+    _loaded = true;
+  }
+  return BASELINE_DATA;
+
+  // v2 (future) — fetch from SharePoint:
+  // const res = await fetch('./baseline.json', { cache: 'no-cache' });
+  // if (!res.ok) throw new Error('Failed to load baseline: ' + res.status);
+  // const data = await res.json();
+  // calibrateEstimatedCosts(data, TARGET_NET_MARGIN_PCT);
+  // return data;
+}
+
+// Node.js compatibility
+
+/* ── UI ──────────────────────────────────────────────────────────────── */
+// tabs.js — tab switching (instant, no animation per spec)
+// State lives in the global `state` object. Tabs are purely a view layer.
+
+function switchTab(id) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    b.classList.remove('active');
+    b.setAttribute('aria-selected', 'false');
+  });
+
+  const panel = document.getElementById('panel-' + id);
+  const btn   = document.getElementById('tab-' + id);
+  if (panel) panel.classList.add('active');
+  if (btn) {
+    btn.classList.add('active');
+    btn.setAttribute('aria-selected', 'true');
+  }
+
+  // Re-render cost detail when switching to it, so it reflects latest lever state
+  if (id === 'cost-detail') renderCostDetail();
+}
+
+// levers.js — lever card rendering + slider binding
+//
+// Lever config defines the 6 levers and their display rules.
+// Levers 1-3: multiplier (display %, stored as %)
+// Levers 4-6: additive pp (display pp, stored as pp)
+//
+// The colour tint on the left edge of each card:
+//   gold   = direction is favorable to margin
+//   red    = direction is unfavorable to margin
+//   none   = at zero
+
+const LEVER_CONFIG = [
+  {
+    key:       'selling_price',
+    label:     'Selling Price',
+    unit:      '%',
+    unitLabel: 'multiplier',
+    min: -20, max: 20, step: 1, defaultVal: 0,
+    tooltip:   'Adjusts selling price per SF for all unit types. +10% → gross GDV increases by 10% before discounts.',
+    resultFn:  (levers, baseline) => {
+      const adj = baseline.derived_params.construction_cost_per_sf_gfa; // not used here
+      const basePrice = baseline.sales[0].selling_price_per_sf;
+      const adjPrice  = basePrice * (1 + levers.selling_price / 100);
+      return `→ RM ${adjPrice.toFixed(2)} / SF (residential T1)`;
+    },
+    // Higher selling price is good for margin
+    favorableSign: 1,
+  },
+  {
+    key:       'construction_cost',
+    label:     'Construction Cost',
+    unit:      '%',
+    unitLabel: 'multiplier',
+    min: -15, max: 25, step: 1, defaultVal: 0,
+    tooltip:   'Scales all construction sub-items (5.x) proportionally. -3% = contractor agrees to reduce whole bill by 3%.',
+    resultFn:  (levers, baseline) => {
+      const adj = baseline.derived_params.construction_cost_per_sf_gfa * (1 + levers.construction_cost / 100);
+      return `→ RM ${adj.toFixed(2)} / SF GFA`;
+    },
+    // Lower construction cost is good for margin
+    favorableSign: -1,
+  },
+  {
+    key:       'sales_period',
+    label:     'Sales Period',
+    unit:      '%',
+    unitLabel: 'multiplier',
+    min: -25, max: 50, step: 5, defaultVal: 0,
+    tooltip:   'Stretches or compresses the sales period. Does NOT change GDV or construction cost — only affects how long construction interest accrues.',
+    resultFn:  (levers, baseline) => {
+      const months = baseline.financing.sales_period_months * (1 + levers.sales_period / 100);
+      return `→ ${months.toFixed(0)} months`;
+    },
+    // Shorter sales period is good (less interest)
+    favorableSign: -1,
+  },
+  {
+    key:       'interest_rate',
+    label:     'Interest Rate',
+    unit:      'pp',
+    unitLabel: 'additive',
+    min: -2, max: 3, step: 0.1, defaultVal: 0,
+    tooltip:   'Adds percentage points to the base interest rate (4.8% p.a.). Affects land holding interest and construction interest.',
+    resultFn:  (levers, baseline) => {
+      const rate = baseline.financing.interest_rate_pct + levers.interest_rate;
+      return `→ ${rate.toFixed(1)}% p.a.`;
+    },
+    favorableSign: -1,
+  },
+  {
+    key:       'ap_commission',
+    label:     'A&P + Commission',
+    unit:      'pp',
+    unitLabel: 'additive',
+    min: -1, max: 3, step: 0.1, defaultVal: 0,
+    tooltip:   '+1pp splits equally: +0.5pp to Advertising & Promotion (item 17.1) and +0.5pp to Agent Commission (item 18).',
+    resultFn:  (levers, baseline) => {
+      const advPct = baseline.derived_params.advertising_promotion_pct_of_gdv + levers.ap_commission / 2;
+      const comPct = baseline.derived_params.agent_commission_pct_of_gdv     + levers.ap_commission / 2;
+      return `→ A&P ${advPct.toFixed(1)}% + Comm ${comPct.toFixed(1)}% of GDV`;
+    },
+    favorableSign: -1,
+  },
+  {
+    key:       'bumi_discount',
+    label:     'Bumi Contribution',
+    unit:      'pp',
+    unitLabel: 'additive',
+    min: -2, max: 5, step: 0.1, defaultVal: 0,
+    tooltip:   'Adjusts Bumi Contribution (item 20) as % of net GDV. +1pp increases TDC by 1% of GDV — affects margin directly.',
+    resultFn:  (levers, baseline) => {
+      const pct = baseline.derived_params.bumi_contribution_pct_of_gdv + levers.bumi_discount;
+      return `→ ${pct.toFixed(1)}% of net GDV`;
+    },
+    favorableSign: -1,
+  },
+];
+
+function renderLevers(baseline) {
+  const container = document.getElementById('levers-container');
+  if (!container) return;
+
+  container.innerHTML = LEVER_CONFIG.map(cfg => `
+    <div class="lever-card lever-neutral" id="lever-card-${cfg.key}" data-key="${cfg.key}">
+      <div class="lever-header">
+        <span class="lever-name" title="${cfg.tooltip}">${cfg.label}</span>
+        <span class="lever-unit">${cfg.unitLabel}</span>
+      </div>
+      <div class="lever-control">
+        <input
+          type="range"
+          class="lever-slider"
+          id="slider-${cfg.key}"
+          min="${cfg.min}" max="${cfg.max}" step="${cfg.step}"
+          value="${cfg.defaultVal}"
+          aria-label="${cfg.label}"
+        />
+        <input
+          type="number"
+          class="lever-input"
+          id="input-${cfg.key}"
+          min="${cfg.min}" max="${cfg.max}" step="${cfg.step}"
+          value="${cfg.defaultVal}"
+          aria-label="${cfg.label} value"
+        />
+        <span style="font-family:var(--mono);font-size:11px;color:var(--ink-dim);flex-shrink:0;">${cfg.unit}</span>
+      </div>
+      <div class="lever-footer">
+        <span class="lever-result" id="result-${cfg.key}"></span>
+        <span class="lever-delta neutral" id="delta-${cfg.key}"></span>
+      </div>
+    </div>
+  `).join('');
+
+  // Bind events after rendering
+  LEVER_CONFIG.forEach(cfg => {
+    const slider = document.getElementById('slider-' + cfg.key);
+    const input  = document.getElementById('input-'  + cfg.key);
+
+    // Slider → update state (rAF-throttled on rapid drag, Gotcha 4)
+    slider.addEventListener('input', () => {
+      const v = parseFloat(slider.value);  // Gotcha: value is a string (Gotcha 2)
+      input.value = v;
+      onLeverChange(cfg.key, v);
+    });
+
+    // Numeric input → sync slider + state
+    input.addEventListener('change', () => {
+      let v = parseFloat(input.value);
+      v = Math.max(cfg.min, Math.min(cfg.max, v));
+      v = Math.round(v / cfg.step) * cfg.step;
+      input.value = v;
+      slider.value = v;
+      onLeverChange(cfg.key, v);
+    });
+
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter') input.blur();
+    });
+  });
+
+  // Initial render with zero levers
+  updateLeverDisplay(state.levers, baseline);
+}
+
+function updateLeverDisplay(levers, baseline) {
+  LEVER_CONFIG.forEach(cfg => {
+    const v      = levers[cfg.key];
+    const card   = document.getElementById('lever-card-' + cfg.key);
+    const result = document.getElementById('result-' + cfg.key);
+    const delta  = document.getElementById('delta-'  + cfg.key);
+
+    if (!card) return;
+
+    // Left-edge tint (Gotcha context: favorable direction)
+    card.classList.remove('lever-positive', 'lever-negative', 'lever-neutral');
+    if (Math.abs(v) < 1e-9) {
+      card.classList.add('lever-neutral');
+    } else if (v * cfg.favorableSign > 0) {
+      card.classList.add('lever-positive');
+    } else {
+      card.classList.add('lever-negative');
+    }
+
+    // Result line
+    if (result) result.textContent = cfg.resultFn(levers, baseline);
+
+    // Delta badge
+    if (delta) {
+      if (Math.abs(v) < 1e-9) {
+        delta.textContent = '';
+        delta.className = 'lever-delta neutral';
+      } else {
+        const sign = v > 0 ? '+' : '';
+        delta.textContent = `${sign}${v}${cfg.unit}`;
+        delta.className = 'lever-delta ' + (v * cfg.favorableSign > 0 ? 'positive' : 'negative');
+      }
+    }
+  });
+}
+
+// Reset all lever UI to zero (Gotcha 7: must dispatch 'input' to move thumb visually)
+function resetLeverUI() {
+  LEVER_CONFIG.forEach(cfg => {
+    const slider = document.getElementById('slider-' + cfg.key);
+    const input  = document.getElementById('input-'  + cfg.key);
+    if (slider) {
+      slider.value = cfg.defaultVal;
+      slider.dispatchEvent(new Event('input'));  // Gotcha 7
+    }
+    if (input) input.value = cfg.defaultVal;
+  });
+}
+
+// kpis.js — KPI card rendering + count-up animation
+//
+// Gotcha 5: slider drags fire events per pixel → each triggers a recalc → each
+// would normally start a new count-up animation, causing queued animations fighting.
+// Solution: one rAF loop per KPI, updating a target value immediately. The loop
+// "chases" the target, not re-queuing from scratch each call.
+
+const KPI_DEFS = [
+  {
+    id: 'gdv',
+    label: 'GDV (Net)',
+    field: 'gdv_thousand',
+    format: v => 'RM ' + (v / 1000).toFixed(1) + 'M',
+    deltaFormat: (d) => {
+      if (Math.abs(d) < 500) return null;
+      const sign = d > 0 ? '+' : '';
+      return sign + 'RM ' + (d / 1000).toFixed(1) + 'M';
+    },
+    deltaClass: d => d > 500 ? 'positive' : d < -500 ? 'negative' : 'neutral',
+    isHero: false,
+  },
+  {
+    id: 'tdc',
+    label: 'TDC',
+    field: 'tdc_thousand',
+    format: v => 'RM ' + (v / 1000).toFixed(1) + 'M',
+    deltaFormat: (d) => {
+      if (Math.abs(d) < 500) return null;
+      const sign = d > 0 ? '+' : '';
+      return sign + 'RM ' + (d / 1000).toFixed(1) + 'M';
+    },
+    // TDC going up is bad (negative = good)
+    deltaClass: d => d < -500 ? 'positive' : d > 500 ? 'negative' : 'neutral',
+    isHero: false,
+  },
+  {
+    id: 'profit',
+    label: 'Net Profit',
+    field: 'net_profit_thousand',
+    format: v => 'RM ' + (v / 1000).toFixed(1) + 'M',
+    deltaFormat: (d) => {
+      if (Math.abs(d) < 500) return null;
+      const sign = d > 0 ? '+' : '';
+      return sign + 'RM ' + (d / 1000).toFixed(1) + 'M';
+    },
+    deltaClass: d => d > 500 ? 'positive' : d < -500 ? 'negative' : 'neutral',
+    isHero: false,
+  },
+  {
+    id: 'margin',
+    label: 'Net Margin',
+    field: 'margin_pct',
+    format: v => v.toFixed(1) + '%',
+    deltaFormat: (d) => {
+      if (Math.abs(d) < 0.05) return null;
+      const sign = d > 0 ? '+' : '';
+      return sign + d.toFixed(1) + 'pp';
+    },
+    deltaClass: d => d > 0.05 ? 'positive' : d < -0.05 ? 'negative' : 'neutral',
+    isHero: true,
+  },
+];
+
+function renderKPIShell(baselineKPIs) {
+  const container = document.getElementById('kpi-container');
+  if (!container) return;
+
+  container.innerHTML = KPI_DEFS.map(def => `
+    <div class="kpi-card${def.isHero ? ' kpi-hero' : ''}" data-kpi="${def.id}" id="kpi-card-${def.id}">
+      <div class="kpi-label">${def.label}</div>
+      <div class="kpi-value" id="kpi-value-${def.id}">${def.format(baselineKPIs[def.field])}</div>
+      <div class="kpi-delta neutral" id="kpi-delta-${def.id}"></div>
+      <div class="kpi-baseline" id="kpi-baseline-${def.id}">
+        Baseline: ${def.format(baselineKPIs[def.field])}
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── Count-up animation (Gotcha 5) ────────────────────────────────────────────
+
+// One animation state object per KPI. The rAF loop updates `current` toward `target`.
+const _animState = {};
+
+KPI_DEFS.forEach(def => {
+  _animState[def.id] = {
+    current: 0,
+    target: 0,
+    rafId: null,
+    def,
+    baselineVal: 0,
+  };
+});
+
+const ANIM_SPEED = 0.18;  // fraction of remaining gap to close per frame
+
+function _animateKPI(id) {
+  const s = _animState[id];
+  const diff = s.target - s.current;
+
+  if (Math.abs(diff) < 0.01) {
+    s.current = s.target;
+    s.rafId = null;
+    _renderKPIValue(id, s.current, s.baselineVal);
+    return;
+  }
+
+  s.current += diff * ANIM_SPEED;
+  _renderKPIValue(id, s.current, s.baselineVal);
+  s.rafId = requestAnimationFrame(() => _animateKPI(id));
+}
+
+function _renderKPIValue(id, value, baselineVal) {
+  const def = KPI_DEFS.find(d => d.id === id);
+  if (!def) return;
+
+  const el = document.getElementById('kpi-value-' + id);
+  const deltaEl = document.getElementById('kpi-delta-' + id);
+  const card = document.getElementById('kpi-card-' + id);
+  if (!el) return;
+
+  el.textContent = def.format(value);
+
+  const delta = value - baselineVal;
+
+  if (deltaEl) {
+    const text = def.deltaFormat(delta);
+    if (!text) {
+      deltaEl.textContent = '';
+      deltaEl.className = 'kpi-delta neutral';
+    } else {
+      deltaEl.textContent = text;
+      deltaEl.className = 'kpi-delta ' + def.deltaClass(delta);
+    }
+  }
+
+  // Margin card accent stripe
+  if (id === 'margin' && card) {
+    card.classList.remove('good', 'warn', 'danger');
+    if (value >= 20)      card.classList.add('good');
+    else if (value >= 15) card.classList.add('warn');
+    else                  card.classList.add('danger');
+  }
+}
+
+function updateKPIs(kpis, baselineKPIs) {
+  KPI_DEFS.forEach(def => {
+    const s = _animState[def.id];
+    s.target      = kpis[def.field];
+    s.baselineVal = baselineKPIs[def.field];
+
+    // Kick off animation if not already running (Gotcha 5: don't re-queue)
+    if (s.rafId === null) {
+      s.current = s.target; // snap on first render, animate on subsequent
+      s.rafId = requestAnimationFrame(() => _animateKPI(def.id));
+    }
+    // If already running: just update target — the loop will chase the new value
+  });
+}
+
+// Call once after baseline loads to seed current values (no animation on first paint)
+function initKPIs(baselineKPIs) {
+  renderKPIShell(baselineKPIs);
+  KPI_DEFS.forEach(def => {
+    const s = _animState[def.id];
+    s.current     = baselineKPIs[def.field];
+    s.target      = baselineKPIs[def.field];
+    s.baselineVal = baselineKPIs[def.field];
+    _renderKPIValue(def.id, s.current, s.baselineVal);
+  });
+}
+
+// cost-detail.js — read-only F_L2 table renderer
+//
+// Gotcha 8: Cost Detail tab is STRICTLY READ-ONLY. No <input> elements, no hover
+// affordances, no cursor: pointer/text. Clicking a number does nothing.
+//
+// Table structure:
+//   thead: sticky header row
+//   tbody: cost items (headers, aggregates, leaves)
+//   tfoot: TDC, GDV, Profit, Margin totals
+//
+// Indent by level (CSS class indent-1/2/3).
+// Derived items show a small "(derived)" badge.
+// Estimated items show a gold [i] badge.
+// Delta colors: cost↓ = green (good), cost↑ = red (bad). GDV reversed.
+
+function renderCostDetail() {
+  _renderAdjustmentPills();
+  _renderTable();
+}
+
+function _renderAdjustmentPills() {
+  const pills = document.getElementById('adjustments-pills');
+  if (!pills || typeof state === 'undefined') return;
+
+  const LEVER_LABELS = {
+    selling_price:    'Selling',
+    construction_cost:'Construction',
+    sales_period:     'Sales Period',
+    interest_rate:    'Interest Rate',
+    ap_commission:    'A&P + Comm',
+    bumi_discount:    'Bumi Contrib',
+  };
+
+  pills.innerHTML = Object.entries(state.levers).map(([key, val]) => {
+    const label = LEVER_LABELS[key] || key;
+    const zero  = Math.abs(val) < 1e-9;
+    const sign  = val > 0 ? '+' : '';
+    const unit  = ['selling_price','construction_cost','sales_period'].includes(key) ? '%' : 'pp';
+    return `<span class="adjustment-pill${zero ? ' zero' : ''}">${label}: ${zero ? '0' : sign + val}${unit}</span>`;
+  }).join('');
+}
+
+function _fmt(n) {
+  if (n === null || n === undefined) return '—';
+  return Math.round(n).toLocaleString('en-MY');
+}
+
+function _fmtDelta(d, isGDV) {
+  if (d === null || d === undefined || Math.abs(d) < 1) return '<span class="delta-zero">(=)</span>';
+  const rounded = Math.round(d);
+  const sign = rounded > 0 ? '+' : '';
+  // For GDV line: up = good. For cost lines: up = bad.
+  const cls = isGDV
+    ? (rounded > 0 ? 'delta-positive' : 'delta-negative')
+    : (rounded < 0 ? 'delta-negative' : 'delta-positive');
+  return `<span class="${cls}">${sign}${rounded.toLocaleString('en-MY')}</span>`;
+}
+
+function _renderTable() {
+  const table = document.getElementById('cost-table');
+  if (!table || typeof state === 'undefined') return;
+
+  const kpis = calculateKPIs(state.baseline, state.levers);
+  const items = kpis.cost_detail;
+
+  // ── thead ──
+  const thead = `
+    <thead>
+      <tr>
+        <th style="width:60px;">Item</th>
+        <th>Description</th>
+        <th style="width:110px;">Baseline<br><span style="font-size:9px;font-weight:400;">(RM '000)</span></th>
+        <th style="width:110px;">Scenario<br><span style="font-size:9px;font-weight:400;">(RM '000)</span></th>
+        <th style="width:90px;">Δ</th>
+      </tr>
+    </thead>`;
+
+  // ── tbody ──
+  let tbodyRows = '';
+  items.forEach(item => {
+    const indentClass = `indent-${item.level}`;
+    const roleClass   = `row-${item.row_role}`;
+    const isHeader    = item.row_role === 'header';
+    const isDerived   = item.calc !== 'input' && item.calc !== 'rollup' && item.calc !== null;
+    const isEst       = item.is_estimated;
+    const isAggregate = item.row_role === 'aggregate';
+
+    if (isHeader) {
+      tbodyRows += `
+        <tr class="row-header ${indentClass}">
+          <td class="td-label" colspan="2" style="padding-left:${(item.level-1)*20}px">
+            ${item.item_no} &nbsp; ${item.label}
+          </td>
+          <td class="num">—</td>
+          <td class="num">—</td>
+          <td class="num">—</td>
+        </tr>`;
+      return;
+    }
+
+    const baseAmt = item.baseline_amount_thousand;
+    const adjAmt  = item.adjusted_amount_thousand;
+    const delta   = item.delta_thousand;
+
+    const badges = [
+      isDerived ? '<span class="derived-badge">(derived)</span>' : '',
+      isEst     ? '<span class="indicative-badge" title="Indicative — confirm with QS">[i]</span>' : '',
+      isAggregate && !isDerived ? '<span class="derived-badge">*</span>' : '',
+    ].join('');
+
+    tbodyRows += `
+      <tr class="${roleClass} ${isDerived ? 'row-derived' : ''} ${indentClass}">
+        <td class="td-label" style="color:var(--ink-dim);font-size:11px;">${item.item_no}</td>
+        <td class="td-label" style="padding-left:${(item.level-1)*20}px">
+          ${item.label}${badges}
+        </td>
+        <td class="num">${_fmt(baseAmt)}</td>
+        <td class="num">${_fmt(adjAmt)}</td>
+        <td class="num">${_fmtDelta(delta, false)}</td>
+      </tr>`;
+  });
+
+  // ── tfoot totals ──
+  const gdvBase = state.baseline ? calculateGDV(state.baseline).net_gdv_thousand : 0;
+  const tfoot = `
+    <tfoot>
+      <tr class="row-total">
+        <td colspan="2">TOTAL DEVELOPMENT COST</td>
+        <td class="num">${_fmt(kpis._baselineTDC)}</td>
+        <td class="num">${_fmt(kpis.tdc_thousand)}</td>
+        <td class="num">${_fmtDelta(kpis.tdc_thousand - kpis._baselineTDC, false)}</td>
+      </tr>
+      <tr class="row-net-gdv row-gdv">
+        <td colspan="2">TOTAL NET GDV</td>
+        <td class="num">${_fmt(gdvBase)}</td>
+        <td class="num">${_fmt(kpis.gdv_thousand)}</td>
+        <td class="num">${_fmtDelta(kpis.gdv_thousand - gdvBase, true)}</td>
+      </tr>
+      <tr class="row-profit">
+        <td colspan="2">NET PROFIT</td>
+        <td class="num">${_fmt(kpis._baselineProfit)}</td>
+        <td class="num">${_fmt(kpis.net_profit_thousand)}</td>
+        <td class="num">${_fmtDelta(kpis.net_profit_thousand - kpis._baselineProfit, true)}</td>
+      </tr>
+      <tr class="row-margin">
+        <td colspan="2">NET MARGIN</td>
+        <td class="num">${kpis._baselineMargin ? kpis._baselineMargin.toFixed(1) + '%' : '—'}</td>
+        <td class="num">${kpis.margin_pct.toFixed(1)}%</td>
+        <td class="num">${_fmtDelta(kpis._baselineMargin ? (kpis.margin_pct - kpis._baselineMargin) : null, true)}</td>
+      </tr>
+    </tfoot>`;
+
+  table.innerHTML = thead + '<tbody>' + tbodyRows + '</tbody>' + tfoot;
+}
+
+// summary.js — auto-generated scenario sentence under KPI cards
+
+function renderSummary(levers, kpis, baselineKPIs) {
+  const container = document.getElementById('summary-container');
+  if (!container) return;
+
+  const activeLevers = Object.entries(levers).filter(([, v]) => Math.abs(v) > 1e-9);
+
+  let text;
+  if (activeLevers.length === 0) {
+    text = 'All levers at baseline. Adjust an assumption to see the impact on margin and profit.';
+  } else {
+    const parts = activeLevers.map(([key, val]) => {
+      const sign = val > 0 ? '+' : '';
+      const cfg = (typeof LEVER_CONFIG !== 'undefined' ? LEVER_CONFIG : []).find(c => c.key === key);
+      const label = cfg ? cfg.label : key;
+      const unit  = cfg ? cfg.unit  : '';
+      return `${label} ${sign}${val}${unit}`;
+    });
+
+    const marginDelta = kpis.margin_pct - baselineKPIs.margin_pct;
+    const profitDelta = kpis.net_profit_thousand - baselineKPIs.net_profit_thousand;
+
+    const marginSign  = marginDelta >= 0 ? '+' : '';
+    const profitSign  = profitDelta >= 0 ? '+RM ' : '−RM ';
+    const profitAbs   = Math.abs(profitDelta / 1000).toFixed(1);
+
+    text = `At ${parts.join(' and ')}, margin moves from ${baselineKPIs.margin_pct.toFixed(1)}% to ${kpis.margin_pct.toFixed(1)}% (${marginSign}${marginDelta.toFixed(1)}pp). Net profit change: ${profitSign}${profitAbs}M.`;
+  }
+
+  container.innerHTML = `
+    <div class="section-label" style="margin-bottom:10px;">Scenario</div>
+    <div class="summary-text">${text}</div>
+    ${activeLevers.length > 0 ? '<div class="summary-hint">→ Switch to Cost Detail tab for the full line-by-line breakdown</div>' : ''}
+  `;
+}
+
+// export.js — CSV (UTF-8 BOM) + JSON dual-download
+//
+// Gotcha 12: CSV must have UTF-8 BOM (﻿) so Excel on Windows opens correctly.
+// Gotcha 13: Two <a download> clicks in quick succession → browser blocks second.
+//   Solution: 100ms gap between downloads (Safari also needs user-gesture pattern).
+
+async function handleExport() {
+  const kpis  = calculateKPIs(state.baseline, state.levers);
+  const baseK = calculateKPIs(state.baseline, ZERO_LEVERS);
+  const meta  = state.baseline.meta;
+  const ts    = new Date().toISOString().replace(/:/g, '-').slice(0, 19);
+  const fname = `${meta.project_id}_scenario_${ts}`;
+
+  downloadCSV(fname, kpis, baseK, state.levers, state.baseline, meta);
+  await new Promise(r => setTimeout(r, 100));  // Gotcha 13
+  downloadJSON(fname, kpis, baseK, state.levers, state.baseline, meta);
+}
+
+// ── CSV ───────────────────────────────────────────────────────────────────────
+
+function downloadCSV(fname, kpis, baseK, levers, baseline, meta) {
+  const rows = [];
+
+  rows.push(['NCT Feasibility Scenario Report']);
+  rows.push(['Project', meta.project_name]);
+  rows.push(['Baseline', `${meta.baseline_version} (${meta.refreshed_at})`]);
+  rows.push(['Generated', new Date().toISOString()]);
+  rows.push(['TDC Note', meta.tdc_label || 'Indicative']);
+  rows.push([]);
+
+  rows.push(['LEVERS']);
+  rows.push(['Lever', 'Baseline', 'Adjustment', 'Result']);
+
+  const leverRows = [
+    ['Selling Price',       '(baseline)', `${levers.selling_price > 0 ? '+' : ''}${levers.selling_price}%`, `×${(1 + levers.selling_price / 100).toFixed(2)}`],
+    ['Construction Cost',   '(baseline)', `${levers.construction_cost > 0 ? '+' : ''}${levers.construction_cost}%`, `×${(1 + levers.construction_cost / 100).toFixed(2)}`],
+    ['Sales Period',        `${baseline.financing.sales_period_months} months`, `${levers.sales_period > 0 ? '+' : ''}${levers.sales_period}%`, `${(baseline.financing.sales_period_months * (1 + levers.sales_period / 100)).toFixed(0)} months`],
+    ['Interest Rate',       `${baseline.financing.interest_rate_pct}%`, `${levers.interest_rate > 0 ? '+' : ''}${levers.interest_rate}pp`, `${(baseline.financing.interest_rate_pct + levers.interest_rate).toFixed(1)}%`],
+    ['A&P + Commission',    `${(baseline.derived_params.advertising_promotion_pct_of_gdv + baseline.derived_params.agent_commission_pct_of_gdv).toFixed(1)}%`, `${levers.ap_commission > 0 ? '+' : ''}${levers.ap_commission}pp`, `${(baseline.derived_params.advertising_promotion_pct_of_gdv + levers.ap_commission / 2 + baseline.derived_params.agent_commission_pct_of_gdv + levers.ap_commission / 2).toFixed(1)}%`],
+    ['Bumi Contribution',   `${baseline.derived_params.bumi_contribution_pct_of_gdv.toFixed(1)}%`, `${levers.bumi_discount > 0 ? '+' : ''}${levers.bumi_discount}pp`, `${(baseline.derived_params.bumi_contribution_pct_of_gdv + levers.bumi_discount).toFixed(1)}%`],
+  ];
+  rows.push(...leverRows);
+  rows.push([]);
+
+  rows.push(["KPI SUMMARY (RM '000)"]);
+  rows.push(['KPI', 'Baseline', 'Scenario', 'Delta', 'Delta %']);
+  rows.push(['GDV (Net)',   Math.round(baseK.gdv_thousand),        Math.round(kpis.gdv_thousand),        _sign(kpis.gdv_thousand - baseK.gdv_thousand),           _signPct((kpis.gdv_thousand - baseK.gdv_thousand) / baseK.gdv_thousand * 100)]);
+  rows.push(['TDC',        Math.round(baseK.tdc_thousand),        Math.round(kpis.tdc_thousand),        _sign(kpis.tdc_thousand - baseK.tdc_thousand),           _signPct((kpis.tdc_thousand - baseK.tdc_thousand) / baseK.tdc_thousand * 100)]);
+  rows.push(['Net Profit', Math.round(baseK.net_profit_thousand), Math.round(kpis.net_profit_thousand), _sign(kpis.net_profit_thousand - baseK.net_profit_thousand), _signPct((kpis.net_profit_thousand - baseK.net_profit_thousand) / baseK.net_profit_thousand * 100)]);
+  rows.push(['Margin %',   baseK.margin_pct.toFixed(2),          kpis.margin_pct.toFixed(2),          _sign(kpis.margin_pct - baseK.margin_pct) + 'pp', '(pp)']);
+  rows.push([]);
+
+  rows.push(["COST DETAIL (RM '000)"]);
+  rows.push(['Item No', 'Description', 'Baseline', 'Scenario', 'Delta', 'Action']);
+
+  kpis.cost_detail.forEach(item => {
+    if (item.row_role === 'header') {
+      rows.push([item.item_no, item.label.toUpperCase(), '', '', '', '']);
+      return;
+    }
+
+    const baseAmt = item.baseline_amount_thousand !== null ? Math.round(item.baseline_amount_thousand) : '';
+    const adjAmt  = item.adjusted_amount_thousand !== null ? Math.round(item.adjusted_amount_thousand) : '';
+    const delta   = item.delta_thousand !== null ? Math.round(item.delta_thousand) : '';
+
+    let action = '';
+    if (item.calc === 'derived_interest' || item.calc === 'derived_pct_gdv') {
+      action = '(no action — auto)';
+    } else if (item.calc === 'rollup') {
+      action = '';
+    } else if (item.is_estimated) {
+      // Construction items that scaled
+      if (item.item_no.startsWith('5.') && Math.abs(levers.construction_cost) > 1e-9) {
+        const pct = levers.construction_cost;
+        action = `${pct < 0 ? 'Reduce' : 'Increase'} by ${Math.abs(pct)}% (indicative — confirm with QS)`;
+      } else if (item.delta_thousand && Math.abs(item.delta_thousand) > 0.5) {
+        action = '(indicative — confirm with QS)';
+      }
+    } else if (item.item_no.startsWith('5.') && Math.abs(levers.construction_cost) > 1e-9) {
+      const pct = levers.construction_cost;
+      action = `${pct < 0 ? 'Reduce' : 'Increase'} by ${Math.abs(pct)}%`;
+    }
+
+    rows.push([item.item_no, item.label + (item.is_estimated ? ' [INDICATIVE]' : ''), baseAmt, adjAmt, delta, action]);
+  });
+
+  const BOM = '﻿';  // Gotcha 12: Excel needs BOM to open UTF-8 correctly
+  const csv = BOM + rows.map(r => r.map(_csvCell).join(',')).join('\r\n');
+  _triggerDownload(fname + '.csv', new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+}
+
+function _sign(n)    { return n >= 0 ? '+' + Math.round(n) : '' + Math.round(n); }
+function _signPct(n) { return n >= 0 ? '+' + n.toFixed(1) + '%' : n.toFixed(1) + '%'; }
+function _csvCell(v) {
+  const s = String(v ?? '');
+  return /[,"\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+}
+
+// ── JSON ──────────────────────────────────────────────────────────────────────
+
+function downloadJSON(fname, kpis, baseK, levers, baseline, meta) {
+  const ts = new Date().toISOString();
+  const payload = {
+    scenario_id: 'scn_' + ts.replace(/[:.]/g, '-').slice(0, 19),
+    project_id:  meta.project_id,
+    project_name: meta.project_name,
+    baseline_version: meta.baseline_version,
+    baseline_refreshed_at: meta.refreshed_at,
+    tdc_note: meta.tdc_label || 'Indicative',
+    scenario_created_at: ts,
+    levers,
+    baseline_kpis: {
+      gdv_thousand:        Math.round(baseK.gdv_thousand),
+      tdc_thousand:        Math.round(baseK.tdc_thousand),
+      net_profit_thousand: Math.round(baseK.net_profit_thousand),
+      margin_pct:          Math.round(baseK.margin_pct * 10) / 10,
+    },
+    scenario_kpis: {
+      gdv_thousand:        Math.round(kpis.gdv_thousand),
+      tdc_thousand:        Math.round(kpis.tdc_thousand),
+      net_profit_thousand: Math.round(kpis.net_profit_thousand),
+      margin_pct:          Math.round(kpis.margin_pct * 10) / 10,
+    },
+    cost_detail: kpis.cost_detail
+      .filter(i => i.row_role !== 'header')
+      .map(i => ({
+        item_no:              i.item_no,
+        description:          i.label,
+        is_estimated:         i.is_estimated,
+        baseline_thousand:    i.baseline_amount_thousand !== null ? Math.round(i.baseline_amount_thousand) : null,
+        adjusted_thousand:    i.adjusted_amount_thousand !== null ? Math.round(i.adjusted_amount_thousand) : null,
+        delta_thousand:       i.delta_thousand !== null ? Math.round(i.delta_thousand) : null,
+        calc:                 i.calc,
+      })),
+  };
+
+  _triggerDownload(
+    fname + '.json',
+    new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' }),
+  );
+}
+
+// ── Download trigger ──────────────────────────────────────────────────────────
+
+// Uses <a download> pattern — Safari requires user-gesture; this is called from a
+// button click so the gesture is preserved (Gotcha: blob URL alone doesn't work in Safari).
+function _triggerDownload(filename, blob) {
+  const url = URL.createObjectURL(blob);
+  const a   = document.createElement('a');
+  a.href     = url;
+  a.download = filename;
+  a.style.display = 'none';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 10000);
+}
+
+
+/* ── App boot ────────────────────────────────────────────────────────── */
+// app.js — application boot + state management
+//
+// Single state object (Gotcha 14). All UI reads from and writes to `state`.
+// Tabs and levers are purely view — they never own state.
+
+const state = {
+  baseline: null,
+  levers: { ...ZERO_LEVERS },
+  baselineKPIs: null,
+};
+
+// ── Lever change entry point ──────────────────────────────────────────────────
+// Called by levers.js on every slider/input event.
+// rAF-throttle to cap recalculations during rapid slider drags.
+
+let _rafPending = false;
+
+function onLeverChange(key, value) {
+  state.levers[key] = value;
+
+  if (!_rafPending) {
+    _rafPending = true;
+    requestAnimationFrame(() => {
+      _rafPending = false;
+      _recalcAndRender();
+    });
+  }
+}
+
+function _recalcAndRender() {
+  const kpis = calculateKPIs(state.baseline, state.levers);
+
+  // Attach baseline values for cost-detail footer (avoids double calculateKPIs call)
+  kpis._baselineTDC    = state.baselineKPIs.tdc_thousand;
+  kpis._baselineProfit = state.baselineKPIs.net_profit_thousand;
+  kpis._baselineMargin = state.baselineKPIs.margin_pct;
+
+  updateKPIs(kpis, state.baselineKPIs);
+  updateLeverDisplay(state.levers, state.baseline);
+  renderSummary(state.levers, kpis, state.baselineKPIs);
+
+  // Cost Detail tab updates live in the background — only re-render DOM if it's active
+  if (document.getElementById('panel-cost-detail').classList.contains('active')) {
+    renderCostDetail();
+  }
+}
+
+// ── Reset ─────────────────────────────────────────────────────────────────────
+function handleReset() {
+  state.levers = { ...ZERO_LEVERS };
+  resetLeverUI();   // levers.js — resets slider thumbs visually (Gotcha 7)
+  _recalcAndRender();
+}
+
+// ── Boot ──────────────────────────────────────────────────────────────────────
+async function boot() {
+  state.baseline   = await loadBaseline();  // applies calibration
+  state.levers     = { ...ZERO_LEVERS };
+  state.baselineKPIs = calculateKPIs(state.baseline, ZERO_LEVERS);
+
+  // Populate project metadata in top bar
+  const meta = state.baseline.meta;
+  const nameEl   = document.getElementById('project-name');
+  const badgeEl  = document.getElementById('baseline-badge');
+  if (nameEl)  nameEl.textContent  = meta.project_name;
+  if (badgeEl) badgeEl.textContent = `Baseline ${meta.baseline_version} · ${meta.refreshed_at}`;
+
+  // Render UI
+  renderLevers(state.baseline);
+  initKPIs(state.baselineKPIs);
+  renderSummary(state.levers, state.baselineKPIs, state.baselineKPIs);
+}
+
+boot();
+</script>
+</body>
+</html>
