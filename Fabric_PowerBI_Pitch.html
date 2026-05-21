@@ -1548,6 +1548,7 @@ body::after {
   text-transform: uppercase;
   color: var(--ink-dim);
   z-index: 20;
+  display: none;
   opacity: 0.6;
 }
 
@@ -1763,13 +1764,15 @@ body::after {
 .cta-grid {
   display: grid;
   grid-template-columns: 1fr 1.2fr;
-  gap: 3rem;
-  margin-top: 2rem;
+  gap: 2.4rem;
+  margin-top: 1.4rem;
+  margin-bottom: 3.4rem;
   flex: 1;
+  min-height: 0;
 }
 
 .fedelis-card {
-  padding: 2rem;
+  padding: 1.6rem 1.8rem;
   border: 1px solid var(--gold-dim);
   border-radius: 4px;
   background: linear-gradient(180deg, rgba(201,169,97,0.05), transparent);
@@ -1793,7 +1796,7 @@ body::after {
   font-family: var(--serif);
   font-size: 1rem;
   color: var(--ink-muted);
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.1rem;
   font-style: italic;
 }
 
@@ -1801,8 +1804,8 @@ body::after {
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 0.9rem;
-  margin-bottom: 1.5rem;
+  gap: 0.65rem;
+  margin-bottom: 1rem;
   flex: 1;
 }
 
@@ -1832,7 +1835,7 @@ body::after {
 
 .fedelis-team {
   margin-top: auto;
-  padding-top: 1.2rem;
+  padding-top: 0.8rem;
   border-top: 1px solid var(--line);
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1858,7 +1861,8 @@ body::after {
 .cta-right {
   display: flex;
   flex-direction: column;
-  gap: 1.2rem;
+  gap: 0.75rem;
+  min-height: 0;
 }
 
 .cta-ask {
@@ -1922,8 +1926,8 @@ body::after {
 }
 
 .cta-contact {
-  margin-top: auto;
-  padding: 1.2rem 1.4rem;
+  margin-top: 0;
+  padding: 0.85rem 1rem;
   border: 1px solid var(--gold-dim);
   border-radius: 4px;
   background: rgba(201,169,97,0.03);
@@ -1938,7 +1942,7 @@ body::after {
   font-style: italic;
   font-size: 0.95rem;
   color: var(--ink);
-  line-height: 1.4;
+  line-height: 1.35;
 }
 
 .cta-contact-text strong {
@@ -1956,7 +1960,98 @@ body::after {
   padding: 0.5em 1em;
   border: 1px solid var(--gold);
   border-radius: 4px;
+  margin-right: clamp(4rem, 8vw, 7rem);
 }
+
+/* ─── Readability pass: larger meeting-room body text ─── */
+.subtitle {
+  font-size: clamp(1.05rem, 1.3vw, 1.25rem);
+}
+
+.body,
+.agenda-item .desc,
+.challenge-card p,
+.flow-list li,
+.comp-context,
+.role-subtitle,
+.role-list li,
+.role-footer,
+.option-desc,
+.option-row,
+.option-best,
+.phase-val,
+.phases-footer-text,
+.input-desc,
+.input-usecase,
+.arch-block p,
+.week-desc,
+.case-quote,
+.case-stat-value,
+.roi-stat-text,
+.fedelis-credentials li,
+.cta-decision-body,
+.cta-contact-text {
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.poc-list li,
+.poc-decision-text {
+  font-size: 1rem;
+  line-height: 1.45;
+}
+
+.panel-title,
+.dash-caption {
+  font-size: 0.92rem;
+}
+
+.scenario-row,
+.scenario-val,
+.donut-legend,
+.tornado,
+.assumptions-table {
+  font-size: 0.8rem;
+}
+
+.scenario-foot,
+.scenario-foot-val,
+.donut-legend-row .value,
+.assumptions-table .av,
+.dash-caption strong {
+  font-size: 0.74rem;
+}
+
+.panel-meta,
+.scenario-name,
+.scenario-foot-key,
+.tornado-label,
+.kpi-label,
+.kpi-delta,
+.case-stat-label,
+.roi-source,
+.roi-footnote,
+.role-label,
+.option-row .key,
+.phase-key,
+.input-phase {
+  font-size: 10px;
+}
+
+.slide [style*="font-size:0.78rem"] {
+  font-size: 0.9rem !important;
+  line-height: 1.45 !important;
+}
+
+.slide [style*="font-size:0.72rem"] {
+  font-size: 0.82rem !important;
+  line-height: 1.45 !important;
+}
+
+.slide [style*="font-size:9px"] {
+  font-size: 10px !important;
+}
+
 @media print {
   body, html { overflow: visible; }
   .deck { height: auto; }
