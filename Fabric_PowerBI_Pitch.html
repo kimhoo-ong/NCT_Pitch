@@ -2052,6 +2052,220 @@ body::after {
   font-size: 10px !important;
 }
 
+/* ─── Mobile layout ─── */
+@media screen and (max-width: 768px) {
+  html,
+  body {
+    overflow: hidden;
+  }
+
+  .deck {
+    height: 100dvh;
+  }
+
+  .slide {
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  .slide.active {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .chrome-top,
+  .chrome-bottom {
+    position: static;
+    left: auto;
+    right: auto;
+    top: auto;
+    bottom: auto;
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    font-size: 9px;
+    line-height: 1.45;
+  }
+
+  .chrome-bottom {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--line);
+  }
+
+  .slide-num {
+    margin-left: auto;
+  }
+
+  .eyebrow {
+    font-size: 9px;
+    line-height: 1.4;
+    letter-spacing: 0.18em;
+    margin-bottom: 0.8rem;
+  }
+
+  .h-display,
+  .cover h1 {
+    font-size: clamp(2.6rem, 16vw, 4.2rem);
+  }
+
+  .h-title {
+    font-size: clamp(2rem, 10vw, 3.2rem);
+  }
+
+  .subtitle,
+  .body {
+    font-size: 1rem;
+  }
+
+  .cover,
+  .slide {
+    justify-content: flex-start;
+  }
+
+  .cover-grid,
+  .cover-meta,
+  .agenda-grid,
+  .challenge-grid,
+  .flow,
+  .roles,
+  .options,
+  .phases,
+  .inputs,
+  .outcomes-grid,
+  .poc,
+  .cta-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+
+  .cover-meta {
+    padding-bottom: 1rem;
+  }
+
+  .flow-arrow {
+    min-height: 1.5rem;
+    transform: rotate(90deg);
+  }
+
+  .comp-row {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+    align-items: start;
+  }
+
+  .comp-from,
+  .comp-to,
+  .comp-context {
+    text-align: left;
+  }
+
+  .phase {
+    padding: 1rem 0 0;
+    border-top: 1px solid var(--line);
+  }
+
+  .phase:first-child {
+    border-top: none;
+  }
+
+  .phases::before {
+    display: none;
+  }
+
+  .phases-footer,
+  .arch-layer,
+  .week,
+  .case-stats,
+  .cta-contact {
+    grid-template-columns: 1fr;
+    gap: 0.65rem;
+  }
+
+  .arch-blocks,
+  .arch-blocks[style] {
+    grid-template-columns: 1fr !important;
+  }
+
+  .input-card {
+    grid-template-columns: 1fr;
+  }
+
+  .input-phase {
+    justify-self: start;
+  }
+
+  .sim-video-wrap {
+    align-items: flex-start;
+    margin-top: 0.5rem;
+  }
+
+  .sim-video {
+    width: 100%;
+    max-height: none;
+  }
+
+  .dash-frame {
+    flex: none;
+    overflow: auto;
+    max-height: none;
+  }
+
+  .dash-body {
+    min-width: 900px;
+  }
+
+  .dash-bar {
+    min-width: 900px;
+  }
+
+  .fedelis-card,
+  .option-card,
+  .challenge-card,
+  .role-card,
+  .case-study {
+    padding: 1.2rem;
+  }
+
+  .fedelis-credentials li,
+  .cta-contact-text {
+    font-size: 0.95rem;
+  }
+
+  .fedelis-team {
+    margin-top: 1.2rem;
+  }
+
+  .cta-grid {
+    margin-bottom: 2rem;
+    flex: none;
+    min-height: auto;
+  }
+
+  .cta-right {
+    min-height: auto;
+  }
+
+  .cta-right [style*="grid-template-columns:1fr auto"] {
+    grid-template-columns: 1fr !important;
+    align-items: start !important;
+  }
+
+  .cta-right [style*="text-align:right"] {
+    text-align: left !important;
+  }
+
+  .cta-contact-action {
+    justify-self: start;
+    margin-right: 0;
+  }
+
+  .nav {
+    display: none;
+  }
+}
+
 @media print {
   body, html { overflow: visible; }
   .deck { height: auto; }
@@ -2100,7 +2314,7 @@ body::after {
       </div>
       <div>
         <div class="meta-label">Prepared by</div>
-        <div class="meta-value">Fedelis · Ong Kim Hoo</div>
+        <div class="meta-value">Ong Kim Hoo</div>
       </div>
     </div>
   </div>
@@ -2511,7 +2725,6 @@ body::after {
         <div class="phase-key">Outcome</div>
         <div class="phase-val">Standardised reporting</div>
       </div>
-      <div style="margin-top:0.6rem;padding-top:0.6rem;border-top:1px dashed var(--line);font-family:var(--mono);font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--ink-dim)">Out of current scope</div>
     </div>
     <div class="phase reveal">
       <div class="phase-num">03</div>
