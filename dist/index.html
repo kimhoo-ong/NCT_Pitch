@@ -3,10 +3,3291 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="refresh" content="0; url=./Fabric_PowerBI_Pitch.html">
-<title>NCT Pitch</title>
+<title>NCT Feasibility Decision Intelligence</title>
+<style>
+:root {
+  --paper: #f7f3ea;
+  --paper-2: #efe8da;
+  --ink: #20201d;
+  --muted: #62615b;
+  --faint: #8b887d;
+  --line: rgba(32, 32, 29, 0.12);
+  --line-strong: rgba(32, 32, 29, 0.22);
+  --gold: #a9823a;
+  --gold-soft: rgba(169, 130, 58, 0.14);
+  --blue: #456f8f;
+  --blue-soft: rgba(69, 111, 143, 0.13);
+  --green: #6d8f63;
+  --green-soft: rgba(109, 143, 99, 0.18);
+  --red: #b45a52;
+  --red-soft: rgba(180, 90, 82, 0.12);
+  --shadow: 0 18px 42px rgba(74, 60, 38, 0.10), 0 2px 8px rgba(0, 0, 0, 0.03);
+  --serif: Georgia, "Times New Roman", serif;
+  --sans: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+}
+
+* { box-sizing: border-box; }
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--sans);
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(120deg, rgba(255,255,255,0.7), transparent 40%),
+    radial-gradient(circle at 80% 10%, rgba(169,130,58,0.08), transparent 35%),
+    radial-gradient(circle at 10% 90%, rgba(69,111,143,0.06), transparent 40%);
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.045;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+}
+
+.deck {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1;
+}
+
+.slide {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 46px 64px 42px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 320ms ease;
+}
+
+.slide.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.chrome {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 22px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: var(--faint);
+  text-transform: uppercase;
+}
+
+.chrome b {
+  color: var(--gold);
+  font-weight: 500;
+}
+
+.slide-head {
+  margin-top: 28px;
+  max-width: 1080px;
+}
+
+.kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--gold);
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.kicker::before {
+  content: "";
+  width: 28px;
+  height: 1px;
+  background: var(--gold);
+}
+
+h1,
+h2 {
+  margin: 0;
+  font-family: var(--serif);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: 0.98;
+}
+
+h1 { font-size: clamp(56px, 6vw, 86px); }
+h2 { font-size: clamp(38px, 4vw, 58px); }
+
+em {
+  color: var(--gold);
+  font-style: italic;
+}
+
+.subtitle {
+  margin: 14px 0 0;
+  max-width: 780px;
+  color: var(--muted);
+  font-size: 20px;
+  line-height: 1.45;
+  font-weight: 300;
+}
+
+.content {
+  flex: 1;
+  min-height: 0;
+  margin-top: 26px;
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 24px;
+  color: var(--faint);
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.17em;
+  text-transform: uppercase;
+}
+
+.panel {
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,0.48);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+}
+
+.quiet-panel {
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,0.32);
+  border-radius: 8px;
+}
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1.02fr 0.98fr;
+  gap: 36px;
+  align-items: center;
+  height: 100%;
+}
+
+.hero-statement {
+  border-left: 3px solid var(--gold);
+  padding-left: 22px;
+  margin-top: 26px;
+  color: var(--muted);
+  font-size: 21px;
+  line-height: 1.45;
+  max-width: 680px;
+}
+
+.platform-hero {
+  position: relative;
+  min-height: 420px;
+  padding: 26px;
+  display: grid;
+  align-content: center;
+  gap: 18px;
+}
+
+.platform-row {
+  display: grid;
+  grid-template-columns: 1fr 70px 1.15fr;
+  gap: 14px;
+  align-items: center;
+}
+
+.file-stack {
+  position: relative;
+  height: 116px;
+}
+
+.file {
+  position: absolute;
+  width: 165px;
+  height: 76px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: rgba(255,255,255,0.9);
+  padding: 12px;
+  box-shadow: 0 8px 18px rgba(0,0,0,0.05);
+}
+
+.file:nth-child(1) { left: 4px; top: 26px; transform: rotate(-5deg); }
+.file:nth-child(2) { left: 30px; top: 13px; transform: rotate(3deg); }
+.file:nth-child(3) { left: 62px; top: 38px; transform: rotate(-1deg); }
+
+.file-title {
+  font-family: var(--serif);
+  font-size: 18px;
+  margin-bottom: 6px;
+}
+
+.file-meta {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--faint);
+  letter-spacing: 0.12em;
+}
+
+.arrow {
+  color: var(--gold);
+  font-size: 44px;
+  text-align: center;
+  font-family: var(--serif);
+}
+
+.decision-card {
+  padding: 20px;
+  border-radius: 8px;
+  background: linear-gradient(150deg, rgba(169,130,58,0.12), rgba(255,255,255,0.8));
+  border: 1px solid var(--gold-soft);
+}
+
+.decision-card .label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: var(--gold);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.decision-card .value {
+  font-family: var(--serif);
+  font-size: 34px;
+  line-height: 1;
+}
+
+.three-proof {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.proof-card {
+  padding: 18px;
+  min-height: 130px;
+}
+
+.proof-card strong {
+  display: block;
+  font-family: var(--serif);
+  font-size: 22px;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.proof-card span {
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.42;
+}
+
+.messy-workflow {
+  display: grid;
+  grid-template-columns: 1.05fr 0.2fr 0.95fr 0.2fr 0.9fr;
+  gap: 16px;
+  align-items: stretch;
+  height: 100%;
+}
+
+.messy-zone {
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.zone-title {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 14px;
+}
+
+.team-files {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.mini-xls {
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,0.8);
+  border-radius: 6px;
+  padding: 10px;
+  min-height: 70px;
+}
+
+.mini-xls .team {
+  font-family: var(--serif);
+  font-size: 16px;
+}
+
+.mini-xls .version {
+  margin-top: 6px;
+  color: var(--faint);
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+}
+
+.manual-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  justify-content: center;
+}
+
+.manual-step {
+  border: 1px dashed var(--line-strong);
+  border-radius: 8px;
+  padding: 14px;
+  background: rgba(255,255,255,0.45);
+}
+
+.manual-step b {
+  display: block;
+  font-size: 15px;
+  margin-bottom: 6px;
+}
+
+.manual-step span {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.report-delay {
+  display: grid;
+  align-content: center;
+  gap: 14px;
+}
+
+.delay-number {
+  font-family: var(--serif);
+  font-size: 74px;
+  line-height: 0.9;
+  color: var(--red);
+}
+
+.management-questions {
+  display: grid;
+  gap: 11px;
+}
+
+.management-question {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255,255,255,0.62);
+  padding: 13px 14px;
+}
+
+.management-question span {
+  display: block;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 7px;
+}
+
+.management-question b {
+  display: block;
+  font-family: var(--serif);
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 1.12;
+}
+
+.control-line {
+  border-left: 3px solid var(--gold);
+  background: var(--gold-soft);
+  padding: 13px 15px;
+  color: var(--ink);
+  font-size: 16px;
+  line-height: 1.36;
+}
+
+.merged-risk {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: 16px;
+  height: 100%;
+}
+
+.risk-panels {
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: 16px;
+  min-height: 0;
+}
+
+.merged-card {
+  padding: 18px 20px;
+  min-height: 0;
+}
+
+.merged-list {
+  display: grid;
+  gap: 8px;
+}
+
+.merged-risk .risk-row {
+  padding: 8px 0;
+}
+
+.merged-risk .risk-copy b {
+  font-size: 17px;
+}
+
+.merged-risk .risk-copy span {
+  font-size: 13px;
+}
+
+.review-list {
+  gap: 8px;
+}
+
+.review-list .management-question {
+  padding: 10px 12px;
+}
+
+.review-list .management-question span {
+  margin-bottom: 5px;
+}
+
+.review-list .management-question b {
+  font-size: 18px;
+}
+
+.margin-highlight {
+  display: grid;
+  grid-template-columns: 250px 1fr;
+  align-items: center;
+  gap: 22px;
+  padding: 18px 22px;
+  border-left: 3px solid var(--red);
+}
+
+.margin-highlight .big {
+  font-family: var(--serif);
+  font-size: 48px;
+  color: var(--red);
+  line-height: 1;
+}
+
+.margin-highlight p {
+  color: var(--muted);
+  font-size: 17px;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.margin-highlight p strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.margin-highlight .cause-tags {
+  margin-top: 12px;
+}
+
+.excel-reality {
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: 18px;
+  height: 100%;
+}
+
+.reality-card {
+  padding: 22px 24px;
+}
+
+.reality-list {
+  display: grid;
+  gap: 12px;
+}
+
+.reality-list .risk-row {
+  padding: 12px 0;
+}
+
+.reality-list .risk-copy b {
+  font-size: 20px;
+}
+
+.reality-list .risk-copy span {
+  font-size: 14px;
+}
+
+.scale-card {
+  padding: 24px;
+  display: grid;
+  align-content: center;
+}
+
+.scale-card h3 {
+  margin: 0 0 12px;
+  font-family: var(--serif);
+  font-size: 31px;
+  font-weight: 400;
+  line-height: 1.05;
+}
+
+.growth-equation {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 10px 0 14px;
+}
+
+.growth-equation span {
+  border: 1px solid rgba(180,90,82,0.18);
+  border-radius: 999px;
+  background: rgba(180,90,82,0.07);
+  color: var(--red);
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 7px 9px;
+}
+
+.scale-flow {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.scale-step {
+  display: grid;
+  grid-template-columns: 42px 1fr;
+  gap: 12px;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255,255,255,0.48);
+  padding: 10px 12px;
+}
+
+.scale-step b {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--red-soft);
+  color: var(--red);
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 20px;
+}
+
+.scale-step span {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.28;
+}
+
+.reality-takeaway {
+  border-left: 3px solid var(--gold);
+  background: var(--gold-soft);
+  border-radius: 8px;
+  padding: 13px 16px;
+  color: var(--ink);
+  font-size: 16px;
+  line-height: 1.38;
+}
+
+.risk-table {
+  display: grid;
+  grid-template-columns: 1fr 1.1fr;
+  height: 100%;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  overflow: hidden;
+  background: rgba(255,255,255,0.42);
+}
+
+.risk-col {
+  padding: 22px 24px;
+}
+
+.risk-col:first-child {
+  border-right: 1px solid var(--line);
+}
+
+.risk-head {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 16px;
+}
+
+.risk-row {
+  display: grid;
+  grid-template-columns: 26px 1fr;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+  align-items: start;
+}
+
+.risk-row:last-child { border-bottom: none; }
+
+.risk-num {
+  color: var(--gold);
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 20px;
+}
+
+.risk-copy b {
+  display: block;
+  font-family: var(--serif);
+  font-size: 19px;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.risk-copy span {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.38;
+}
+
+.movement-card {
+  padding: 24px;
+  align-self: center;
+  border-left: 3px solid var(--red);
+}
+
+.movement-card .big {
+  font-family: var(--serif);
+  font-size: 56px;
+  color: var(--red);
+  line-height: 1;
+  margin-bottom: 12px;
+}
+
+.movement-card p {
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1.45;
+  margin: 0;
+}
+
+.movement-card p strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.cause-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.cause-tags span {
+  border: 1px solid rgba(183,74,64,0.22);
+  border-radius: 999px;
+  background: rgba(183,74,64,0.06);
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  padding: 7px 10px;
+  text-transform: uppercase;
+}
+
+.before-after {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: 16px;
+  height: 100%;
+}
+
+.transformation-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) 156px minmax(0, 1.08fr);
+  gap: 18px;
+  min-height: 0;
+}
+
+.state-card {
+  min-height: 0;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+.state-card h3 {
+  font-family: var(--serif);
+  font-size: 29px;
+  margin: 0 0 18px;
+  font-weight: 400;
+  line-height: 1.08;
+}
+
+.state-card.today {
+  border-color: rgba(180,90,82,0.26);
+  background:
+    linear-gradient(145deg, rgba(255,255,255,0.52), rgba(180,90,82,0.09)),
+    rgba(255,255,255,0.32);
+  box-shadow: 0 14px 34px rgba(111,64,56,0.08);
+}
+
+.state-card.future {
+  border-color: rgba(109,143,99,0.28);
+  background:
+    linear-gradient(145deg, rgba(255,255,255,0.62), rgba(109,143,99,0.14)),
+    rgba(255,255,255,0.44);
+  box-shadow: 0 22px 48px rgba(65,88,56,0.12);
+}
+
+.state-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 5px;
+}
+
+.state-card.today::before {
+  background: linear-gradient(90deg, var(--red), rgba(180,90,82,0.2));
+}
+
+.state-card.future::before {
+  background: linear-gradient(90deg, var(--green), var(--gold));
+}
+
+.state-tag {
+  width: fit-content;
+  margin-bottom: 12px;
+  border-radius: 999px;
+  padding: 7px 10px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.state-card.today .state-tag {
+  color: var(--red);
+  background: var(--red-soft);
+}
+
+.state-card.future .state-tag {
+  color: var(--green);
+  background: var(--green-soft);
+}
+
+.state-list {
+  display: grid;
+  gap: 11px;
+}
+
+.state-list div {
+  display: grid;
+  grid-template-columns: 30px 1fr;
+  gap: 12px;
+  color: var(--ink);
+  font-size: 16px;
+  line-height: 1.36;
+  align-items: start;
+  padding: 12px 0;
+  border-top: 1px solid var(--line);
+}
+
+.state-list i {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  margin-top: 1px;
+  display: grid;
+  place-items: center;
+  font-style: normal;
+  font-family: var(--mono);
+  font-size: 11px;
+  line-height: 1;
+}
+
+.state-card.today .state-list i {
+  background: rgba(180,90,82,0.13);
+  color: var(--red);
+}
+
+.state-card.future .state-list i {
+  background: rgba(109,143,99,0.18);
+  color: var(--green);
+}
+
+.shift-column {
+  display: grid;
+  grid-template-rows: 1fr auto 1fr;
+  align-items: center;
+  justify-items: center;
+  min-height: 0;
+}
+
+.shift-line {
+  width: 1px;
+  height: 100%;
+  background: linear-gradient(180deg, transparent, rgba(169,130,58,0.45), transparent);
+}
+
+.shift-card {
+  width: 100%;
+  padding: 16px 14px;
+  text-align: center;
+  border: 1px solid rgba(169,130,58,0.26);
+  background: rgba(255,255,255,0.58);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+}
+
+.shift-card b {
+  display: block;
+  font-family: var(--serif);
+  font-size: 21px;
+  font-weight: 400;
+  line-height: 1.12;
+  margin-bottom: 10px;
+}
+
+.shift-card span {
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--gold-soft);
+  color: var(--gold);
+  font-size: 24px;
+}
+
+.value-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+  padding: 14px 18px;
+  border-color: rgba(169,130,58,0.2);
+  background: rgba(255,255,255,0.42);
+}
+
+.value-strip div {
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  text-align: center;
+  border-right: 1px solid var(--line);
+}
+
+.value-strip div:last-child {
+  border-right: 0;
+}
+
+.process-flow {
+  height: 100%;
+  display: grid;
+  align-items: center;
+  gap: 20px;
+}
+
+.phase-bands {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 10px;
+  align-items: stretch;
+}
+
+.phase-band {
+  border: 1px solid rgba(69,111,143,0.18);
+  background: rgba(69,111,143,0.08);
+  border-radius: 8px;
+  padding: 11px 14px;
+  min-height: 70px;
+}
+
+.phase-band.decision {
+  border-color: rgba(169,130,58,0.24);
+  background: rgba(169,130,58,0.10);
+}
+
+.phase-band.visibility {
+  border-color: rgba(109,143,99,0.22);
+  background: rgba(109,143,99,0.12);
+}
+
+.phase-band span {
+  display: block;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin-bottom: 6px;
+}
+
+.phase-band.visibility span {
+  color: var(--green);
+}
+
+.phase-band.decision span {
+  color: var(--gold);
+}
+
+.phase-band b {
+  display: block;
+  font-family: var(--serif);
+  font-size: 21px;
+  font-weight: 400;
+  line-height: 1.08;
+}
+
+.flow-track {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 10px;
+  position: relative;
+}
+
+.flow-track::before {
+  content: "";
+  position: absolute;
+  left: 7%;
+  right: 7%;
+  top: 31px;
+  height: 2px;
+  background: linear-gradient(90deg, var(--blue), var(--gold));
+  z-index: 0;
+}
+
+.flow-step {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  min-width: 0;
+}
+
+.flow-dot {
+  width: 62px;
+  height: 62px;
+  margin: 0 auto 12px;
+  border-radius: 50%;
+  border: 1px solid var(--blue);
+  background: var(--paper);
+  display: grid;
+  place-items: center;
+  font-family: var(--serif);
+  color: var(--blue);
+  font-size: 22px;
+  box-shadow: 0 0 0 8px var(--paper);
+}
+
+.flow-step.decision .flow-dot {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+.flow-step.visibility .flow-dot {
+  border-color: var(--green);
+  color: var(--green);
+}
+
+.flow-card {
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,0.42);
+  border-radius: 8px;
+  padding: 14px 12px 15px;
+  min-height: 170px;
+}
+
+.flow-step.decision .flow-card {
+  border-color: rgba(169,130,58,0.22);
+  background: rgba(169,130,58,0.08);
+}
+
+.flow-step.visibility .flow-card {
+  border-color: rgba(109,143,99,0.22);
+  background: rgba(109,143,99,0.08);
+}
+
+.flow-title {
+  font-family: var(--serif);
+  font-size: 19px;
+  line-height: 1.1;
+  margin-bottom: 8px;
+}
+
+.flow-what {
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.25;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.flow-why {
+  color: var(--muted);
+  font-size: 12.5px;
+  line-height: 1.32;
+}
+
+.journey-slide {
+  height: 100%;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 12px;
+}
+
+.phase1-stack {
+  grid-template-rows: auto auto minmax(0, 1fr);
+}
+
+.mini-flow {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 14px;
+  align-items: center;
+  padding: 9px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255,255,255,0.38);
+}
+
+.mini-flow-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--faint);
+  white-space: nowrap;
+}
+
+.mini-flow-steps {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+}
+
+.mini-step {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: rgba(255,255,255,0.32);
+  color: var(--faint);
+  padding: 7px 8px;
+  min-width: 0;
+}
+
+.mini-step b {
+  display: block;
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  margin-bottom: 4px;
+}
+
+.mini-step span {
+  display: block;
+  font-size: 12px;
+  line-height: 1.15;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mini-step.active.control {
+  border-color: rgba(69,111,143,0.34);
+  background: rgba(69,111,143,0.11);
+  color: var(--blue);
+}
+
+.mini-step.active.visibility {
+  border-color: rgba(109,143,99,0.36);
+  background: rgba(109,143,99,0.13);
+  color: var(--green);
+}
+
+.mini-step.active.decision {
+  border-color: rgba(169,130,58,0.34);
+  background: rgba(169,130,58,0.13);
+  color: var(--gold);
+}
+
+.control-foundation {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.foundation-step {
+  padding: 12px 14px;
+  border: 1px solid rgba(69,111,143,0.18);
+  border-radius: 8px;
+  background: rgba(69,111,143,0.07);
+}
+
+.foundation-step b {
+  display: block;
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: 18px;
+  margin-bottom: 4px;
+}
+
+.foundation-step strong {
+  display: block;
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+.foundation-step span {
+  display: block;
+  color: var(--muted);
+  font-size: 12.5px;
+  line-height: 1.32;
+}
+
+.journey-note {
+  display: grid;
+  grid-template-columns: 0.8fr 1.2fr;
+  gap: 14px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255,255,255,0.38);
+}
+
+.journey-note b {
+  font-family: var(--serif);
+  font-size: 20px;
+  font-weight: 400;
+}
+
+.journey-note span {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.drill-path {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.drill-path span {
+  color: var(--ink);
+  background: rgba(255,255,255,0.52);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 6px 8px;
+}
+
+.excel-layout {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 18px;
+  height: 100%;
+}
+
+.excel-template,
+.input-control,
+.fabric-entry,
+.fabric-core,
+.fabric-benefits {
+  padding: 20px;
+}
+
+.sheet-frame {
+  margin-top: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  overflow: hidden;
+  background: rgba(255,255,255,0.7);
+}
+
+.sheet-toolbar {
+  display: grid;
+  grid-template-columns: 92px 1fr 74px;
+  gap: 8px;
+  align-items: center;
+  padding: 10px;
+  border-bottom: 1px solid var(--line);
+  background: rgba(69,111,143,0.08);
+}
+
+.sheet-pill {
+  border-radius: 999px;
+  background: rgba(255,255,255,0.72);
+  border: 1px solid var(--line);
+  padding: 7px 9px;
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.template-section {
+  display: grid;
+  grid-template-columns: 170px 1fr 1fr;
+  gap: 1px;
+  border-bottom: 1px solid var(--line);
+}
+
+.template-section:last-child {
+  border-bottom: 0;
+}
+
+.template-section div {
+  padding: 12px 13px;
+  min-height: 46px;
+  background: rgba(255,255,255,0.58);
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.template-section .section-name {
+  background: rgba(69,111,143,0.10);
+  color: var(--blue);
+  font-family: var(--serif);
+  font-size: 17px;
+}
+
+.template-meta {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  border-bottom: 1px solid var(--line);
+}
+
+.meta-cell {
+  background: rgba(255,255,255,0.58);
+  padding: 10px 12px;
+  min-height: 54px;
+}
+
+.meta-cell b {
+  display: block;
+  color: var(--faint);
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.meta-cell span {
+  display: block;
+  color: var(--ink);
+  font-size: 14px;
+}
+
+.feasi-input-table {
+  margin-top: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  overflow: hidden;
+  background: rgba(255,255,255,0.66);
+}
+
+.feasi-row {
+  display: grid;
+  grid-template-columns: 1.45fr 82px 130px;
+  gap: 1px;
+  border-bottom: 1px solid var(--line);
+}
+
+.feasi-row:last-child {
+  border-bottom: 0;
+}
+
+.feasi-row div {
+  padding: 9px 11px;
+  background: rgba(255,255,255,0.56);
+  color: var(--muted);
+  font-size: 12.5px;
+  line-height: 1.2;
+}
+
+.feasi-row.header div {
+  background: rgba(69,111,143,0.10);
+  color: var(--blue);
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.feasi-row.section div {
+  background: rgba(32,32,29,0.05);
+  color: var(--ink);
+  font-family: var(--serif);
+  font-size: 16px;
+}
+
+.feasi-row.aggregate div {
+  background: rgba(32,32,29,0.04);
+  color: var(--faint);
+}
+
+.feasi-row.input div {
+  background: rgba(255,255,255,0.62);
+}
+
+.feasi-row .amount-input {
+  color: var(--ink);
+  background: rgba(169,130,58,0.16);
+  border-left: 2px solid rgba(169,130,58,0.45);
+  font-family: var(--mono);
+  font-size: 11px;
+}
+
+.feasi-row .amount-auto {
+  color: var(--faint);
+  font-family: var(--mono);
+  font-size: 10px;
+}
+
+.template-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.template-legend span {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255,255,255,0.5);
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 7px 9px;
+}
+
+.template-legend span:first-child {
+  border-color: rgba(169,130,58,0.28);
+  color: var(--gold);
+  background: rgba(169,130,58,0.12);
+}
+
+.input-checklist {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.check-row {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  gap: 10px;
+  align-items: start;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255,255,255,0.48);
+}
+
+.check-row i {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: rgba(69,111,143,0.13);
+  color: var(--blue);
+  font-style: normal;
+  font-family: var(--mono);
+  font-size: 11px;
+}
+
+.check-row b {
+  display: block;
+  font-size: 15px;
+  margin-bottom: 3px;
+}
+
+.check-row span {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.32;
+}
+
+.folder-tree {
+  margin-top: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255,255,255,0.66);
+  padding: 16px 18px;
+  font-family: var(--mono);
+  font-size: 13px;
+  line-height: 1.48;
+  color: var(--ink);
+  overflow: hidden;
+}
+
+.folder-tree .muted {
+  color: var(--faint);
+}
+
+.folder-tree .folder {
+  color: var(--blue);
+}
+
+.folder-tree .project {
+  color: var(--gold);
+}
+
+.structure-note {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.structure-note div {
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: rgba(255,255,255,0.48);
+  padding: 10px;
+  color: var(--muted);
+  font-size: 12.5px;
+  line-height: 1.3;
+}
+
+.structure-note b {
+  display: block;
+  color: var(--ink);
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+.fabric-layout {
+  display: grid;
+  grid-template-columns: 0.78fr 1.2fr 0.92fr;
+  gap: 18px;
+  height: 100%;
+  align-items: stretch;
+}
+
+.fabric-entry,
+.fabric-benefits {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.source-file {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255,255,255,0.62);
+  padding: 18px;
+  margin-top: 14px;
+}
+
+.source-file h3,
+.fabric-benefits h3 {
+  margin: 0 0 10px;
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: 28px;
+  line-height: 1.05;
+}
+
+.source-file p,
+.fabric-benefits p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+.fabric-core {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: 10px;
+}
+
+.fabric-core-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  color: var(--blue);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.fabric-layer {
+  border: 1px solid rgba(69,111,143,0.22);
+  border-radius: 8px;
+  background: rgba(69,111,143,0.08);
+  padding: 15px 16px;
+  display: grid;
+  align-content: center;
+}
+
+.fabric-layer b {
+  display: block;
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: 24px;
+  margin-bottom: 6px;
+}
+
+.fabric-layer span {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.fabric-tables {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+}
+
+.fabric-table {
+  border: 1px solid rgba(69,111,143,0.18);
+  border-radius: 7px;
+  background: rgba(255,255,255,0.56);
+  overflow: hidden;
+}
+
+.fabric-table b {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  padding: 7px 10px;
+  background: rgba(69,111,143,0.09);
+  color: var(--blue);
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.fabric-table b span {
+  color: var(--faint);
+  font-weight: 400;
+}
+
+.fabric-table p {
+  margin: 0;
+  padding: 7px 10px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.25;
+}
+
+.fabric-flow-mini {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.fabric-flow-mini div {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255,255,255,0.5);
+  padding: 11px 12px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.fabric-flow-mini b {
+  display: block;
+  color: var(--ink);
+  font-family: var(--serif);
+  font-size: 18px;
+  font-weight: 400;
+  margin-bottom: 3px;
+}
+
+.fabric-pain-list,
+.fabric-value-list {
+  display: grid;
+  gap: 11px;
+  margin-top: 16px;
+}
+
+.fabric-pain-list div,
+.fabric-value-list div {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255,255,255,0.48);
+  padding: 12px 13px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.34;
+}
+
+.fabric-pain-list div {
+  border-left: 3px solid var(--red);
+}
+
+.fabric-value-list div {
+  border-left: 3px solid var(--gold);
+  color: var(--ink);
+  background: var(--gold-soft);
+}
+
+.foundation-objects {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 11px;
+  align-content: center;
+}
+
+.business-object {
+  min-height: 138px;
+  border: 1px solid rgba(69,111,143,0.22);
+  border-radius: 8px;
+  background: rgba(255,255,255,0.58);
+  padding: 15px;
+}
+
+.object-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: rgba(69,111,143,0.12);
+  color: var(--blue);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  margin-bottom: 12px;
+}
+
+.business-object b {
+  display: block;
+  font-family: var(--serif);
+  font-size: 22px;
+  font-weight: 400;
+  line-height: 1.05;
+  margin-bottom: 8px;
+}
+
+.business-object span {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.32;
+}
+
+.benefit-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.benefit-list div {
+  border-left: 3px solid var(--gold);
+  padding: 10px 12px;
+  background: var(--gold-soft);
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.snapshot-grid {
+  display: grid;
+  grid-template-columns: 1.25fr 0.8fr;
+  gap: 22px;
+  height: 100%;
+}
+
+.timeline {
+  padding: 24px 26px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.timeline-track {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  position: relative;
+}
+
+.timeline-track::before {
+  content: "";
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  top: 26px;
+  height: 2px;
+  background: var(--gold);
+}
+
+.month {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 12px;
+  justify-items: center;
+}
+
+.month-dot {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--gold);
+  background: var(--paper);
+  font-family: var(--serif);
+  color: var(--gold);
+  font-size: 21px;
+  box-shadow: 0 0 0 7px var(--paper);
+}
+
+.month-card {
+  width: 100%;
+  min-height: 150px;
+  padding: 14px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,0.54);
+}
+
+.month-card b {
+  display: block;
+  font-family: var(--mono);
+  color: var(--faint);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin-bottom: 9px;
+}
+
+.month-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 5px 0;
+  color: var(--muted);
+  font-size: 14px;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+}
+
+.compare-card {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.compare-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 18px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.compare-row:last-child { border-bottom: none; }
+
+.compare-label {
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.compare-value {
+  font-family: var(--serif);
+  font-size: 30px;
+}
+
+.map-layout {
+  display: grid;
+  grid-template-columns: 1.25fr 0.75fr;
+  gap: 22px;
+  height: 100%;
+}
+
+.map-card {
+  padding: 22px;
+}
+
+.site-map {
+  position: relative;
+  height: 100%;
+  min-height: 430px;
+  border-radius: 10px;
+  border: 1px solid rgba(109,143,99,0.28);
+  background:
+    linear-gradient(90deg, transparent 48%, rgba(69,111,143,0.20) 48%, rgba(69,111,143,0.20) 52%, transparent 52%),
+    linear-gradient(180deg, rgba(109,143,99,0.18), rgba(109,143,99,0.08));
+  overflow: hidden;
+}
+
+.site-map::before {
+  content: "";
+  position: absolute;
+  left: 47.4%;
+  top: 7%;
+  bottom: 7%;
+  width: 5.2%;
+  border-radius: 999px;
+  background: repeating-linear-gradient(180deg, #879096 0 20px, #6f777d 20px 22px);
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,0.28);
+}
+
+.site-map::after {
+  content: "";
+  position: absolute;
+  left: 49.35%;
+  top: 8%;
+  bottom: 8%;
+  width: 1.1%;
+  border-radius: 999px;
+  background: #5aa9b9;
+  opacity: 0.85;
+}
+
+.phase-zone {
+  position: absolute;
+  border-radius: 7px;
+  border: 1px solid rgba(32,32,29,0.12);
+  background: rgba(255,255,255,0.52);
+  padding: 9px;
+}
+
+.zone-active {
+  border: 2px solid var(--gold);
+  background: rgba(169,130,58,0.14);
+  box-shadow: 0 14px 34px rgba(169,130,58,0.16);
+}
+
+.phase-label {
+  position: absolute;
+  top: -22px;
+  left: 0;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  color: var(--gold);
+  text-transform: uppercase;
+}
+
+.lot-grid {
+  height: 100%;
+  display: grid;
+  gap: 4px;
+}
+
+.lot-grid.cols-8 { grid-template-columns: repeat(8, 1fr); }
+.lot-grid.cols-5 { grid-template-columns: repeat(5, 1fr); }
+.lot-grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
+
+.lot {
+  border-radius: 2px;
+  background: rgba(109,143,99,0.46);
+  min-height: 12px;
+}
+
+.lot.gold { background: rgba(169,130,58,0.48); }
+.lot.blue { background: rgba(69,111,143,0.42); }
+.lot.orange { background: rgba(196,127,69,0.42); }
+
+.map-side {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: 16px;
+}
+
+.phase-selector {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.phase-chip {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 7px 11px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  text-transform: uppercase;
+  background: rgba(255,255,255,0.45);
+}
+
+.phase-chip.active {
+  border-color: var(--gold);
+  color: var(--gold);
+  background: var(--gold-soft);
+}
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.kpi-card {
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: rgba(255,255,255,0.55);
+}
+
+.kpi-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--faint);
+  margin-bottom: 8px;
+}
+
+.kpi-value {
+  font-family: var(--serif);
+  font-size: 30px;
+  line-height: 1;
+}
+
+.kpi-note {
+  color: var(--muted);
+  font-size: 13px;
+  margin-top: 6px;
+}
+
+.dashboard {
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  gap: 10px;
+  height: 100%;
+  padding: 12px;
+}
+
+.dash-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 9px 12px;
+  border-radius: 7px;
+  background: rgba(255,255,255,0.58);
+  border: 1px solid var(--line);
+}
+
+.dash-title {
+  font-family: var(--serif);
+  font-size: 21px;
+}
+
+.dash-path {
+  margin-top: 4px;
+  color: var(--faint);
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.dash-path b {
+  color: var(--gold);
+  font-weight: 500;
+}
+
+.dash-body {
+  display: grid;
+  grid-template-columns: 1.08fr 0.92fr;
+  gap: 10px;
+  min-height: 0;
+}
+
+.dash-left,
+.dash-right {
+  display: grid;
+  gap: 10px;
+}
+
+.chart-card {
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: rgba(255,255,255,0.52);
+  min-height: 0;
+}
+
+.chart-title {
+  display: flex;
+  justify-content: space-between;
+  color: var(--ink);
+  font-family: var(--serif);
+  font-size: 18px;
+  margin-bottom: 12px;
+}
+
+.chart-title span {
+  color: var(--faint);
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.bars {
+  display: grid;
+  gap: 9px;
+}
+
+.bar-row {
+  display: grid;
+  grid-template-columns: 80px 1fr 52px;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.bar-track {
+  height: 12px;
+  background: rgba(0,0,0,0.06);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  background: var(--gold);
+  border-radius: 999px;
+}
+
+.bar-fill.blue { background: var(--blue); }
+.bar-fill.green { background: var(--green); }
+.bar-fill.red { background: var(--red); }
+
+.trend {
+  height: 116px;
+}
+
+.trend svg {
+  width: 100%;
+  height: 100%;
+}
+
+.heatmap {
+  display: grid;
+  grid-template-columns: 72px repeat(4, 1fr);
+  gap: 5px;
+  font-size: 11px;
+  color: var(--muted);
+  align-items: stretch;
+}
+
+.heat-head {
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.heat-cell {
+  border-radius: 4px;
+  padding: 7px 5px;
+  text-align: center;
+  background: var(--green-soft);
+}
+
+.heat-cell.warn { background: var(--gold-soft); }
+.heat-cell.risk { background: var(--red-soft); color: var(--red); }
+
+.simulation {
+  display: grid;
+  grid-template-columns: 0.9fr 1.1fr;
+  gap: 18px;
+  height: 100%;
+}
+
+.slider-panel,
+.scenario-panel {
+  padding: 22px;
+}
+
+.decision-question {
+  margin: 0 0 14px;
+  padding: 13px 15px;
+  border-left: 3px solid var(--gold);
+  background: rgba(169,130,58,0.11);
+  color: var(--ink);
+  font-family: var(--serif);
+  font-size: 22px;
+  line-height: 1.2;
+}
+
+.slider-group {
+  display: grid;
+  gap: 18px;
+  margin-top: 8px;
+}
+
+.slider-row {
+  display: grid;
+  gap: 8px;
+}
+
+.slider-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 20px;
+}
+
+.slider-top b {
+  font-family: var(--serif);
+  font-size: 19px;
+  font-weight: 500;
+}
+
+.slider-top span {
+  font-family: var(--mono);
+  color: var(--gold);
+  font-size: 11px;
+}
+
+.slider-track {
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(0,0,0,0.08);
+  overflow: hidden;
+}
+
+.slider-fill {
+  height: 100%;
+  width: var(--w);
+  background: linear-gradient(90deg, var(--blue), var(--gold));
+}
+
+.scenario-table {
+  display: grid;
+  grid-template-columns: 1.05fr repeat(4, 1fr);
+  gap: 1px;
+  overflow: hidden;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+}
+
+.scenario-cell {
+  background: rgba(255,255,255,0.58);
+  padding: 11px;
+  min-height: 54px;
+}
+
+.scenario-cell.head {
+  background: rgba(69,111,143,0.12);
+  color: var(--blue);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.scenario-cell.metric {
+  font-family: var(--mono);
+  color: var(--faint);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.scenario-value {
+  font-family: var(--serif);
+  font-size: 22px;
+}
+
+.scenario-value.down { color: var(--red); }
+
+.copilot-layout {
+  display: grid;
+  grid-template-columns: 1fr 0.85fr;
+  gap: 18px;
+  height: 100%;
+}
+
+.qa-panel {
+  padding: 22px;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: 14px;
+}
+
+.qa-question {
+  justify-self: end;
+  max-width: 78%;
+  padding: 13px 16px;
+  border-radius: 18px 18px 4px 18px;
+  background: var(--blue);
+  color: #fff;
+  font-size: 16px;
+  line-height: 1.35;
+}
+
+.qa-answer {
+  max-width: 88%;
+  padding: 16px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,0.7);
+  font-size: 15px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+.qa-answer b {
+  color: var(--ink);
+}
+
+.foundation-note {
+  padding: 18px;
+  display: grid;
+  gap: 12px;
+}
+
+.foundation-note h3 {
+  margin: 0;
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: 30px;
+}
+
+.foundation-note p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1.45;
+}
+
+.value-scorecard {
+  display: grid;
+  grid-template-rows: auto repeat(5, 1fr) auto;
+  gap: 8px;
+  height: 100%;
+}
+
+.score-header,
+.score-row {
+  display: grid;
+  grid-template-columns: 42px 1fr 1fr 1.25fr;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.score-header div {
+  color: var(--faint);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  padding: 0 12px 4px;
+}
+
+.score-header div:first-child {
+  padding: 0;
+}
+
+.score-row {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255,255,255,0.40);
+  overflow: hidden;
+  box-shadow: 0 10px 24px rgba(74,60,38,0.06);
+}
+
+.score-num {
+  display: grid;
+  place-items: center;
+  background: rgba(169,130,58,0.12);
+  color: var(--gold);
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 24px;
+}
+
+.score-cell {
+  display: grid;
+  align-content: center;
+  gap: 5px;
+  padding: 12px 13px;
+  border-left: 1px solid var(--line);
+}
+
+.score-cell.challenge {
+  background: rgba(180,90,82,0.06);
+}
+
+.score-cell.capability {
+  background: rgba(69,111,143,0.07);
+}
+
+.score-cell.outcome {
+  background: rgba(169,130,58,0.09);
+}
+
+.score-cell b {
+  color: var(--ink);
+  font-family: var(--serif);
+  font-size: 19px;
+  font-weight: 400;
+  line-height: 1.08;
+}
+
+.score-cell span {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.32;
+}
+
+.score-cue {
+  width: fit-content;
+  border-radius: 999px;
+  padding: 5px 8px;
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.score-cell.challenge .score-cue {
+  color: var(--red);
+  background: var(--red-soft);
+}
+
+.score-cell.capability .score-cue {
+  color: var(--blue);
+  background: var(--blue-soft);
+}
+
+.score-cell.outcome .score-cue {
+  color: var(--gold);
+  background: var(--gold-soft);
+}
+
+.score-takeaway {
+  border-left: 3px solid var(--gold);
+  border-radius: 8px;
+  background: rgba(255,255,255,0.52);
+  padding: 14px 18px;
+  color: var(--ink);
+  font-family: var(--serif);
+  font-size: 23px;
+  line-height: 1.22;
+}
+
+.pilot-roadmap {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  height: 100%;
+}
+
+.pilot-step {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+}
+
+.pilot-num {
+  font-family: var(--serif);
+  color: var(--gold);
+  font-style: italic;
+  font-size: 52px;
+  line-height: 0.9;
+  margin-bottom: 18px;
+}
+
+.pilot-step h3 {
+  margin: 0 0 14px;
+  font-family: var(--serif);
+  font-size: 30px;
+  font-weight: 400;
+}
+
+.pilot-list {
+  display: grid;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.35;
+}
+
+.pilot-output {
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+  font-family: var(--mono);
+  color: var(--gold);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.nav {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 7px;
+  z-index: 10;
+  display: none;
+}
+
+.nav button {
+  width: 24px;
+  height: 3px;
+  border: 0;
+  background: rgba(32,32,29,0.26);
+  padding: 0;
+}
+
+.nav button.active {
+  width: 38px;
+  background: var(--gold);
+}
+
+.keyboard {
+  position: fixed;
+  right: 24px;
+  bottom: 20px;
+  z-index: 10;
+  color: var(--faint);
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  display: none;
+}
+
+.deck > section:nth-of-type(8) .map-layout {
+  gap: 16px;
+}
+
+.deck > section:nth-of-type(8) .map-card {
+  padding: 16px;
+}
+
+.deck > section:nth-of-type(8) .site-map {
+  min-height: 0;
+}
+
+.deck > section:nth-of-type(8) .map-side {
+  gap: 12px;
+}
+
+.deck > section:nth-of-type(8) .kpi-card {
+  padding: 10px;
+}
+
+.deck > section:nth-of-type(8) .kpi-value {
+  font-size: 24px;
+}
+
+.deck > section:nth-of-type(8) .kpi-note {
+  font-size: 12px;
+}
+
+.deck > section:nth-of-type(9) .content {
+  margin-top: 18px;
+}
+
+.deck > section:nth-of-type(9) .dashboard {
+  gap: 8px;
+  padding: 10px;
+}
+
+.deck > section:nth-of-type(9) .dash-bar {
+  padding: 7px 10px;
+}
+
+.deck > section:nth-of-type(9) .dash-title {
+  font-size: 19px;
+}
+
+.deck > section:nth-of-type(9) .kpi-card {
+  padding: 9px 10px;
+}
+
+.deck > section:nth-of-type(9) .kpi-label {
+  margin-bottom: 5px;
+}
+
+.deck > section:nth-of-type(9) .kpi-value {
+  font-size: 24px;
+}
+
+.deck > section:nth-of-type(9) .dash-body {
+  gap: 8px;
+}
+
+.deck > section:nth-of-type(9) .dash-left,
+.deck > section:nth-of-type(9) .dash-right {
+  gap: 8px;
+}
+
+.deck > section:nth-of-type(9) .chart-card {
+  padding: 10px;
+}
+
+.deck > section:nth-of-type(9) .chart-title {
+  font-size: 16px;
+  margin-bottom: 8px;
+}
+
+.deck > section:nth-of-type(9) .trend {
+  height: 82px;
+}
+
+.deck > section:nth-of-type(9) .bars {
+  gap: 6px;
+}
+
+.deck > section:nth-of-type(9) .bar-row {
+  grid-template-columns: 78px 1fr 46px;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.deck > section:nth-of-type(9) .heatmap {
+  gap: 4px;
+  font-size: 10px;
+}
+
+.deck > section:nth-of-type(9) .heat-cell {
+  padding: 5px 4px;
+}
+
+@media screen and (max-width: 1100px), screen and (max-height: 760px) {
+  .slide { padding: 34px 48px 34px; }
+  .slide-head { margin-top: 20px; }
+  h1 { font-size: clamp(48px, 6vw, 72px); }
+  h2 { font-size: clamp(34px, 4vw, 48px); }
+  .subtitle { font-size: 17px; }
+  .content { margin-top: 18px; }
+  .kpi-value { font-size: 25px; }
+  .score-cell { padding: 10px 11px; }
+  .score-cell b { font-size: 17px; }
+  .score-takeaway { font-size: 20px; padding: 12px 16px; }
+  .pilot-step { padding: 18px; }
+  .pilot-step h3 { font-size: 25px; }
+  .keyboard, .nav { display: none; }
+}
+</style>
 </head>
 <body>
-<p><a href="./Fabric_PowerBI_Pitch.html">Open NCT Pitch</a></p>
+<main class="deck" id="deck"></main>
+<nav class="nav" id="nav" aria-label="Slide navigation"></nav>
+<div class="keyboard">← → navigate</div>
+
+<script>
+const deck = document.getElementById('deck');
+const nav = document.getElementById('nav');
+const TOTAL_SLIDES = 13;
+const FLOW_STEPS = [
+  ['01', 'Excel Input', 'control'],
+  ['02', 'Fabric Foundation', 'control'],
+  ['03', 'Monthly Snapshot', 'control'],
+  ['04', 'Power BI Dashboard', 'visibility'],
+  ['05', 'Simulation', 'decision'],
+  ['06', 'Copilot Q&A', 'decision'],
+];
+
+function kpiCard(label, value, note = '') {
+  return `<div class="kpi-card"><div class="kpi-label">${label}</div><div class="kpi-value">${value}</div>${note ? `<div class="kpi-note">${note}</div>` : ''}</div>`;
+}
+
+function footer(index) {
+  return `
+    <div class="footer">
+      <div>Feasibility Management Control Platform · NCT Smart Industrial Park</div>
+      <div>${String(index).padStart(2, '0')} / ${TOTAL_SLIDES}</div>
+    </div>`;
+}
+
+function chrome(kicker, index) {
+  return `
+    <div class="chrome">
+      <div>${kicker}</div>
+      <div><b>${String(index).padStart(2, '0')}</b> / ${TOTAL_SLIDES}</div>
+    </div>`;
+}
+
+function slide(index, kicker, title, subtitle, content) {
+  return `
+    <section class="slide${index === 1 ? ' active' : ''}">
+      ${chrome(kicker, index)}
+      <div class="slide-head">
+        <h2>${title}</h2>
+        ${subtitle ? `<p class="subtitle">${subtitle}</p>` : ''}
+      </div>
+      <div class="content">${content}</div>
+      ${footer(index)}
+    </section>`;
+}
+
+function flowBreadcrumb(activeSteps) {
+  const active = new Set(activeSteps.map(n => String(n).padStart(2, '0')));
+  return `
+    <div class="mini-flow">
+      <div class="mini-flow-label">Flow position</div>
+      <div class="mini-flow-steps">
+        ${FLOW_STEPS.map(([n, label, type]) => `
+          <div class="mini-step ${active.has(n) ? `active ${type}` : ''}"><b>${n}</b><span>${label}</span></div>`).join('')}
+      </div>
+    </div>`;
+}
+
+function heroSlide() {
+  return `
+    <section class="slide active">
+      ${chrome('Executive message', 1)}
+      <div class="hero-grid">
+        <div>
+          <h1>From Excel Feasibility to <em>Project Decision Intelligence</em></h1>
+          <div class="hero-statement">
+            Transform feasibility from scattered Excel files into a controlled, comparable and decision-ready management platform.
+          </div>
+        </div>
+        <div class="platform-hero panel">
+          <div class="platform-row">
+            <div>
+              <div class="file-stack">
+                <div class="file"><div class="file-title">Phase Feasi</div><div class="file-meta">APR · v3</div></div>
+                <div class="file"><div class="file-title">Cost Update</div><div class="file-meta">QS · MAY</div></div>
+                <div class="file"><div class="file-title">Sales View</div><div class="file-meta">Q2 REVIEW</div></div>
+              </div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="decision-card">
+              <div class="label">Management view</div>
+              <div class="value">Trust the number.<br><em>See the movement.</em></div>
+            </div>
+          </div>
+          <div class="three-proof">
+            <div class="proof-card quiet-panel"><strong>Control</strong><span>One governed feasibility view across projects and phases.</span></div>
+            <div class="proof-card quiet-panel"><strong>Traceability</strong><span>Original and monthly assumptions remain comparable.</span></div>
+            <div class="proof-card quiet-panel"><strong>Decisions</strong><span>Simulation and Q&A sit on trusted data, not manual packs.</span></div>
+          </div>
+        </div>
+      </div>
+      ${footer(1)}
+    </section>`;
+}
+
+function mergedRiskSlide() {
+  const reality = [
+    ['01', 'Many Excel versions', 'Different teams update QS, sales, finance and project files separately, so the &ldquo;latest&rdquo; number is not always obvious.'],
+    ['02', 'Monthly assumptions overwritten', 'When a new month is updated, previous assumptions can be hidden in old files or become hard to audit.'],
+    ['03', 'Manual quarterly comparison', 'Quarterly movement depends on someone finding, opening and consolidating previous workbooks.'],
+    ['04', 'Actual vs target prepared slowly', 'Actual cost, budget and target comparison is prepared outside the feasibility file, so variance appears late.'],
+    ['05', 'No fast phase root cause', 'When margin moves, the cause is not immediately linked to a phase, cost item or assumption.'],
+  ];
+  const scale = [
+    ['01', 'More projects × more phases = more &ldquo;latest&rdquo; files to reconcile.'],
+    ['02', 'More monthly cycles = more assumption history to protect.'],
+    ['03', 'More quarters = more manual comparison work.'],
+    ['04', 'More actuals, budgets and awarded updates = more variance checks to prepare.'],
+    ['05', 'More phases and cost items = harder root-cause tracing.'],
+  ];
+  return `
+    <div class="excel-reality">
+      <div class="reality-card panel">
+        <div class="zone-title">Current Excel Reality · 5 issues</div>
+        <div class="reality-list">
+          ${reality.map(([n, issue, pain]) => `
+            <div class="risk-row"><div class="risk-num">${n}</div><div class="risk-copy"><b>${issue}</b><span>${pain}</span></div></div>`).join('')}
+        </div>
+      </div>
+      <div class="scale-card panel">
+        <div class="zone-title">Portfolio growth amplifies the issues</div>
+        <h3>What is manageable in one project becomes difficult across many projects and phases.</h3>
+        <div class="growth-equation"><span>Projects</span><span>Phases</span><span>Months</span><span>Versions</span></div>
+        <div class="scale-flow">
+          ${scale.map(([n, copy]) => `<div class="scale-step"><b>${n}</b><span>${copy}</span></div>`).join('')}
+        </div>
+        <div class="reality-takeaway">The issue is not Excel calculation. The issue is Excel control at portfolio scale.</div>
+      </div>
+    </div>`;
+}
+
+function messyWorkflow() {
+  const files = [
+    ['QS', 'PH1 cost May v2'], ['Sales', 'Take-up Q2'], ['Finance', 'Actuals Apr'], ['Project', 'WIP update'],
+    ['QS', 'Awarded v3'], ['Sales', 'Pricing latest'], ['Finance', 'Target budget'], ['PM', 'Timeline note'],
+  ];
+  return `
+    <div class="messy-workflow">
+      <div class="messy-zone panel">
+        <div class="zone-title">Different teams · Different files</div>
+        <div class="team-files">${files.map(([team, version]) => `
+          <div class="mini-xls"><div class="team">${team}</div><div class="version">${version}</div></div>`).join('')}
+        </div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="messy-zone panel manual-stack">
+        <div class="zone-title">Manual consolidation</div>
+        <div class="manual-step"><b>Quarterly pack</b><span>Numbers reassembled from multiple workbooks.</span></div>
+        <div class="manual-step"><b>Actual vs target</b><span>Variance prepared outside the feasibility file.</span></div>
+        <div class="manual-step"><b>Root cause</b><span>Analyst traces back phase, cost item and assumption changes.</span></div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="messy-zone panel report-delay">
+        <div class="zone-title">Management review</div>
+        <div class="management-questions">
+          <div class="management-question"><span>Management review question</span><b>Which number should we trust?</b></div>
+          <div class="management-question"><span>Management review question</span><b>What changed since last month?</b></div>
+          <div class="management-question"><span>Management review question</span><b>Which phase caused the margin movement?</b></div>
+        </div>
+        <div class="control-line">The issue is not calculation. The issue is control, traceability and speed.</div>
+      </div>
+    </div>`;
+}
+
+function riskTable() {
+  const issues = [
+    ['01', 'Many Excel versions', 'Different teams may refer to different &ldquo;latest&rdquo; files.'],
+    ['02', 'Monthly assumptions overwritten', 'Previous assumptions are difficult to compare or audit.'],
+    ['03', 'Manual quarterly comparison', 'Trend review depends on someone consolidating old files.'],
+    ['04', 'Actual vs target prepared slowly', 'Variance is visible only after manual preparation.'],
+    ['05', 'No fast phase root cause', 'Margin movement cannot be quickly traced to phase, cost item or assumption.'],
+  ];
+  return `
+    <div class="risk-table">
+      <div class="risk-col">
+        <div class="risk-head">Excel process issue</div>
+        ${issues.map(([n, issue, pain]) => `
+          <div class="risk-row"><div class="risk-num">${n}</div><div class="risk-copy"><b>${issue}</b><span>${pain}</span></div></div>`).join('')}
+      </div>
+      <div class="risk-col" style="display:grid;align-content:center;gap:18px">
+        <div class="risk-head">Management review risk</div>
+        <div class="movement-card quiet-panel">
+          <div class="big">22.4% → 18.9%</div>
+          <p>When margin moves from <strong>22.4% to 18.9%</strong>, management should not need to wait for a manual investigation to know whether the cause is price, cost, phase mix, awarded work, or timing.</p>
+          <div class="cause-tags"><span>Price</span><span>Cost</span><span>Phase mix</span><span>Awarded work</span><span>Timing</span></div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function beforeAfter() {
+  const before = [
+    'Multiple versions make it hard to trust the latest number',
+    'Historical assumptions are difficult to preserve and compare',
+    'Quarterly movement depends on manual consolidation',
+    'Management sees results before the root cause is clear',
+  ];
+  const future = [
+    'One trusted view of current and historical feasibility',
+    'Monthly snapshots make change visible over time',
+    'Phase drill-down helps explain movement faster',
+    'Simulation supports better decisions before commitment',
+  ];
+  const values = ['Better control', 'Faster comparison', 'Clearer root cause', 'Earlier risk visibility'];
+  return `
+    <div class="before-after">
+      <div class="transformation-grid">
+        <div class="state-card today panel">
+          <div class="state-tag">Current state</div>
+          <h3>Today: file-based feasibility creates friction</h3>
+          <div class="state-list">${before.map(x => `<div><i>!</i><span>${x}</span></div>`).join('')}</div>
+        </div>
+        <div class="shift-column">
+          <div class="shift-line"></div>
+          <div class="shift-card"><b>From reactive explanation to proactive control</b><span>→</span></div>
+          <div class="shift-line"></div>
+        </div>
+        <div class="state-card future panel">
+          <div class="state-tag">Future platform</div>
+          <h3>Future: a controlled platform improves visibility and speed</h3>
+          <div class="state-list">${future.map(x => `<div><i>✓</i><span>${x}</span></div>`).join('')}</div>
+        </div>
+      </div>
+      <div class="value-strip panel">${values.map(x => `<div>${x}</div>`).join('')}</div>
+    </div>`;
+}
+
+function processFlow() {
+  const steps = [
+    ['01', 'Excel Input', 'Standardized feasibility template', 'Everyone follows the same input structure.', 'control'],
+    ['02', 'Fabric Foundation', 'Controlled data layer', 'Data is stored, structured and governed in one place.', 'control'],
+    ['03', 'Monthly Snapshot', 'History is preserved', 'Each month is saved, not overwritten.', 'control'],
+    ['04', 'Power BI Dashboard', 'Drill up / drill down visibility', 'View portfolio, project, phase, cost, sales and actual vs target.', 'visibility'],
+    ['05', 'Simulation', 'Test business assumptions', 'Compare price, cost, take-up rate and timeline scenarios.', 'decision'],
+    ['06', 'Copilot Q&A', 'Ask management questions', 'Ask what changed, where risk is, and which phase needs attention.', 'decision'],
+  ];
+  return `
+    <div class="process-flow">
+      <div class="phase-bands">
+        <div class="phase-band" style="grid-column:1 / span 3"><span>Phase 1: Control</span><b>Standardize input, govern data, preserve history</b></div>
+        <div class="phase-band visibility" style="grid-column:4 / span 1"><span>Phase 2: Visibility</span><b>Turn feasibility into review insight</b></div>
+        <div class="phase-band decision" style="grid-column:5 / span 2"><span>Phase 3: Decision Support</span><b>Test scenarios and ask better questions</b></div>
+      </div>
+      <div class="flow-track">${steps.map(([n, t, what, why, type]) => `
+        <div class="flow-step ${type}">
+          <div class="flow-dot">${n}</div>
+          <div class="flow-card">
+            <div class="flow-title">${t}</div>
+            <div class="flow-what">${what}</div>
+            <div class="flow-why">${why}</div>
+          </div>
+        </div>`).join('')}
+      </div>
+    </div>`;
+}
+
+function excelInputSlide() {
+  const checks = [
+    ['Users fill only controlled input cells', 'Yellow-style amount cells capture values such as piling, pile cap, ID and other leaf items.'],
+    ['Aggregate rows are not manually typed', 'Group totals such as GDV and Construction Cost are calculated later from child rows.'],
+    ['One workbook equals one phase and property type', 'Power BI handles cross-phase and cross-property comparison after loading.'],
+    ['Metadata makes every file traceable', 'Project ID, Phase ID, Property Type, Cost Status and Snapshot Date travel with the data.'],
+    ['Excel stays familiar, structure becomes controlled', 'Business teams keep Excel, but the platform receives consistent input.'],
+  ];
+  const meta = [
+    ['Project ID', 'EMIRA01'],
+    ['Phase ID', 'EMIRA01-P1-PH1-SPH1-A'],
+    ['Property Type', 'HR1 · Service Apartment'],
+    ['Cost Status', 'Feasibility_v1'],
+    ['Snapshot Date', '2025-05-04'],
+    ['Submitted By', 'Tan Wei Ming'],
+  ];
+  const rows = [
+    ['section', 'SECTION 2: FEASIBILITY DATA (from F_L2)', '', ''],
+    ['header', 'Particulars', 'Type (C/D)', 'Amount (RM)'],
+    ['aggregate', '1  GROSS DEVELOPMENT VALUE (NET GST)', 'D', '(auto-aggregate)'],
+    ['input', '      1.1  Discount', 'D', 'input'],
+    ['aggregate', '5  TOTAL CONSTRUCTION COST', 'D', '(auto-aggregate)'],
+    ['input', '      5.2.1  Piling', 'D', '5,186,329'],
+    ['input', '      5.2.2  Pile Cap', 'D', '1,500,000'],
+    ['input', '      5.3.7.a  Guard House and Entrance', 'D', '200,000'],
+    ['input', '      5.4.1  ID - Serviced Apartment', 'D', '3,500,000'],
+  ];
+  return `
+    <div class="journey-slide">
+      ${flowBreadcrumb([1])}
+      <div class="excel-layout">
+        <div class="excel-template panel">
+          <div class="zone-title">Standardized Excel input template</div>
+          <div class="sheet-frame">
+            <div class="sheet-toolbar">
+              <div class="sheet-pill">Input Sheet</div>
+              <div class="sheet-pill">Sample_Input_F_L2 · EMIRA01 · PH1-SPH1-A</div>
+              <div class="sheet-pill">HR1</div>
+            </div>
+            <div class="template-meta">
+              ${meta.map(([k, v]) => `<div class="meta-cell"><b>${k}</b><span>${v}</span></div>`).join('')}
+            </div>
+          </div>
+          <div class="feasi-input-table">
+            ${rows.map(([type, a, b, c]) => `
+              <div class="feasi-row ${type}">
+                <div>${a}</div>
+                <div>${b}</div>
+                <div class="${c === '(auto-aggregate)' ? 'amount-auto' : type === 'input' ? 'amount-input' : ''}">${c}</div>
+              </div>`).join('')}
+          </div>
+          <div class="template-legend"><span>Input amount</span><span>Auto aggregate</span><span>Common / Direct classification</span><span>One phase · one property type</span></div>
+          <div class="structure-note">
+            <div><b>Looks like Excel</b>Business teams fill a familiar template, not a new system screen.</div>
+            <div><b>Follows F_L2 logic</b>Item numbers and particulars stay close to the client feasibility structure.</div>
+            <div><b>Ready for Fabric</b>Rows become structured records after validation and loading.</div>
+          </div>
+        </div>
+        <div class="input-control panel">
+          <div class="zone-title">How the template is filled</div>
+          <div class="input-checklist">
+            ${checks.map(([h, p]) => `
+              <div class="check-row"><i>✓</i><div><b>${h}</b><span>${p}</span></div></div>`).join('')}
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function fabricFoundationSlide() {
+  const pain = [
+    'Different teams submit different Excel versions',
+    'Project / phase context is hard to standardize',
+    'Historical changes are difficult to compare',
+  ];
+  const objects = [
+    ['01', 'Project & Phase', 'Consistent hierarchy'],
+    ['02', 'Feasibility Snapshot', 'Monthly version history'],
+    ['03', 'Cost & Budget', 'Actual vs target comparison'],
+    ['04', 'Validation Log', 'Bad files stopped early'],
+  ];
+  const benefits = [
+    'One trusted data structure',
+    'Less version confusion',
+    'Easier project / phase comparison',
+    'Ready for Power BI and simulation',
+  ];
+  return `
+    <div class="journey-slide">
+      ${flowBreadcrumb([2])}
+      <div class="fabric-layout">
+        <div class="fabric-entry panel">
+          <div class="zone-title">Before Fabric: file-based feasibility</div>
+          <div class="source-file">
+            <h3>Excel files carry the numbers, but not enough control.</h3>
+            <div class="fabric-pain-list">${pain.map(x => `<div>${x}</div>`).join('')}</div>
+          </div>
+        </div>
+        <div class="fabric-core panel">
+          <div class="fabric-core-title"><span>Fabric Foundation</span><span>Controlled data layer</span></div>
+          <div class="foundation-objects">
+            ${objects.map(([n, name, desc]) => `
+              <div class="business-object"><div class="object-icon">${n}</div><b>${name}</b><span>${desc}</span></div>`).join('')}
+          </div>
+        </div>
+        <div class="fabric-benefits panel">
+          <div class="zone-title">Management Value</div>
+          <h3>Controlled foundation creates management visibility.</h3>
+          <div class="fabric-value-list">${benefits.map(x => `<div>${x}</div>`).join('')}</div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function snapshotTimeline() {
+  const months = [
+    ['Jan', 'Original', '21.8%', 'RM 420M'],
+    ['Feb', 'Update 1', '20.9%', 'RM 431M'],
+    ['Mar', 'Update 2', '19.7%', 'RM 442M'],
+    ['Apr', 'Latest', '18.9%', 'RM 448M'],
+  ];
+  return `
+    <div class="journey-slide">
+      ${flowBreadcrumb([3])}
+      <div class="snapshot-grid">
+        <div class="timeline panel">
+          <div class="timeline-track">${months.map(([m, tag, margin, cost]) => `
+            <div class="month">
+              <div class="month-dot">${m}</div>
+              <div class="month-card">
+                <b>${tag}</b>
+                <div class="month-row"><span>Margin</span><strong>${margin}</strong></div>
+                <div class="month-row"><span>Dev cost</span><strong>${cost}</strong></div>
+                <div class="month-row"><span>Status</span><strong>Saved</strong></div>
+              </div>
+            </div>`).join('')}
+          </div>
+        </div>
+        <div class="compare-card panel">
+          <div class="zone-title">Original vs Latest</div>
+          <div class="compare-row"><div><div class="compare-label">Gross margin</div></div><div class="compare-value">21.8% → <em>18.9%</em></div></div>
+          <div class="compare-row"><div><div class="compare-label">Development cost</div></div><div class="compare-value">RM 420M → <em>448M</em></div></div>
+          <div class="compare-row"><div><div class="compare-label">Management value</div></div><div class="compare-value">History stays visible</div></div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function lotGrid(count, extraClass = '') {
+  return Array.from({ length: count }, (_, i) => `<div class="lot ${extraClass || (i % 5 === 0 ? 'gold' : i % 7 === 0 ? 'blue' : '')}"></div>`).join('');
+}
+
+function masterPlanDrilldown() {
+  return `
+    <div class="journey-slide">
+      ${flowBreadcrumb([4])}
+      <div class="map-layout">
+        <div class="map-card panel">
+          <div class="site-map">
+            <div class="phase-zone" style="left:5%;top:10%;width:38%;height:32%"><div class="phase-label">Phase 3 · future land</div><div class="lot-grid cols-5">${lotGrid(15, 'green')}</div></div>
+            <div class="phase-zone zone-active" style="left:56%;top:10%;width:36%;height:32%"><div class="phase-label">Phase 2 selected</div><div class="lot-grid cols-8">${lotGrid(40)}</div></div>
+            <div class="phase-zone" style="left:5%;top:56%;width:38%;height:26%"><div class="phase-label">Phase 1 · active</div><div class="lot-grid cols-8">${lotGrid(32, 'blue')}</div></div>
+            <div class="phase-zone" style="left:56%;top:55%;width:28%;height:22%"><div class="phase-label">Phase 5</div><div class="lot-grid cols-4">${lotGrid(16, 'orange')}</div></div>
+            <div class="phase-zone" style="left:86%;top:63%;width:9%;height:22%"><div class="phase-label">Phase 4</div><div class="lot-grid cols-4">${lotGrid(8, 'gold')}</div></div>
+          </div>
+        </div>
+        <div class="map-side">
+          <div class="panel" style="padding:16px">
+            <div class="zone-title">Drill path</div>
+            <div class="drill-path"><span>Overall Park</span>→<span>Phase</span>→<span>Product Type / Cost Category</span>→<span>Root Cause</span></div>
+            <div class="phase-selector" style="margin-top:12px">
+              <span class="phase-chip">Overall</span><span class="phase-chip">Phase 1</span><span class="phase-chip active">Phase 2</span><span class="phase-chip">Phase 3</span><span class="phase-chip">Phase 4</span>
+            </div>
+          </div>
+          <div class="panel" style="padding:16px">
+            <div class="zone-title">Select a phase → update feasibility KPIs</div>
+            <div class="kpi-grid">
+              ${kpiCard('GDV', 'RM 680M', 'industrial lots')}
+              ${kpiCard('Dev Cost', 'RM 510M', 'latest snapshot')}
+              ${kpiCard('Margin %', '19.6%', '-1.6pp QoQ')}
+              ${kpiCard('Cost / SF', 'RM 128', '+4.2% vs target')}
+              ${kpiCard('Budget vs Awarded', '+RM 18M', 'variance')}
+              ${kpiCard('Actual vs Target', '+4%', 'cost variance')}
+              ${kpiCard('Root Cause', 'Construction', 'phase cost driver')}
+              ${kpiCard('Next Review', 'Awarded', 'variance detail')}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function dashboardMockup() {
+  return `
+    <div class="journey-slide">
+      ${flowBreadcrumb([4])}
+      <div class="dashboard panel">
+        <div class="dash-bar">
+          <div>
+            <div class="dash-title">Feasibility Management Review · <em>Phase 2</em></div>
+            <div class="dash-path">NCT Smart Industrial Park &gt; Phase 2 &gt; Construction &gt; <b>Awarded Variance</b></div>
+          </div>
+          <div class="phase-selector"><span class="phase-chip">Overall</span><span class="phase-chip">Phase 1</span><span class="phase-chip active">Phase 2</span><span class="phase-chip">Phase 3</span></div>
+        </div>
+        <div class="kpi-grid" style="grid-template-columns:repeat(6,1fr)">
+          ${kpiCard('GDV', 'RM 680M')}
+          ${kpiCard('Dev Cost', 'RM 510M')}
+          ${kpiCard('Gross Margin', 'RM 133M')}
+          ${kpiCard('Margin %', '19.6%')}
+          ${kpiCard('Cost/SF', 'RM 128')}
+          ${kpiCard('Root Cause', 'Construction')}
+        </div>
+        <div class="dash-body">
+          <div class="dash-left">
+            <div class="chart-card">
+              <div class="chart-title">Quarterly movement <span>Margin %</span></div>
+              <div class="trend">
+                <svg viewBox="0 0 520 120" preserveAspectRatio="none">
+                  <line x1="20" y1="95" x2="500" y2="95" stroke="rgba(0,0,0,0.12)"/>
+                  <line x1="20" y1="60" x2="500" y2="60" stroke="rgba(0,0,0,0.08)"/>
+                  <line x1="20" y1="25" x2="500" y2="25" stroke="rgba(0,0,0,0.08)"/>
+                  <polyline points="35,34 170,46 310,62 455,78" fill="none" stroke="#a9823a" stroke-width="4"/>
+                  <g fill="#a9823a"><circle cx="35" cy="34" r="5"/><circle cx="170" cy="46" r="5"/><circle cx="310" cy="62" r="5"/><circle cx="455" cy="78" r="5"/></g>
+                  <text x="35" y="112" font-size="12" fill="#62615b">Q1</text><text x="170" y="112" font-size="12" fill="#62615b">Q2</text><text x="310" y="112" font-size="12" fill="#62615b">Q3</text><text x="455" y="112" font-size="12" fill="#62615b">Q4</text>
+                </svg>
+              </div>
+            </div>
+            <div class="chart-card">
+              <div class="chart-title">Actual vs target <span>RM million</span></div>
+              <div class="bars">
+                <div class="bar-row"><span>Land</span><div class="bar-track"><div class="bar-fill green" style="width:88%"></div></div><b>On plan</b></div>
+                <div class="bar-row"><span>Construction</span><div class="bar-track"><div class="bar-fill red" style="width:104%"></div></div><b>+4%</b></div>
+                <div class="bar-row"><span>Authority</span><div class="bar-track"><div class="bar-fill blue" style="width:96%"></div></div><b>-4%</b></div>
+                <div class="bar-row"><span>Marketing</span><div class="bar-track"><div class="bar-fill" style="width:101%"></div></div><b>+1%</b></div>
+              </div>
+            </div>
+          </div>
+          <div class="dash-right">
+            <div class="chart-card">
+              <div class="chart-title">Budget vs awarded variance <span>Root cause driver</span></div>
+              <div class="bars">
+                <div class="bar-row"><span>Piling</span><div class="bar-track"><div class="bar-fill red" style="width:72%"></div></div><b>+7.2M</b></div>
+                <div class="bar-row"><span>M&E</span><div class="bar-track"><div class="bar-fill red" style="width:52%"></div></div><b>+5.1M</b></div>
+                <div class="bar-row"><span>Roadworks</span><div class="bar-track"><div class="bar-fill" style="width:40%"></div></div><b>+3.8M</b></div>
+              </div>
+            </div>
+            <div class="chart-card">
+              <div class="chart-title">Phase comparison heatmap <span>Risk view</span></div>
+              <div class="heatmap">
+                <div></div><div class="heat-head">GDV</div><div class="heat-head">Cost</div><div class="heat-head">Margin</div><div class="heat-head">WIP</div>
+                <div>Phase 1</div><div class="heat-cell">OK</div><div class="heat-cell warn">Watch</div><div class="heat-cell">OK</div><div class="heat-cell">OK</div>
+                <div>Phase 2</div><div class="heat-cell">OK</div><div class="heat-cell risk">Risk</div><div class="heat-cell warn">Drop</div><div class="heat-cell">OK</div>
+                <div>Phase 3</div><div class="heat-cell warn">Plan</div><div class="heat-cell">OK</div><div class="heat-cell">OK</div><div class="heat-cell warn">Early</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function simulationPanel() {
+  const sliders = [
+    ['Construction cost', '+5%', '70%'],
+    ['Selling price', '-3%', '38%'],
+    ['Take-up rate', 'slower', '44%'],
+    ['Timeline delay', '+3 months', '58%'],
+  ];
+  return `
+    <div class="journey-slide">
+      ${flowBreadcrumb([5])}
+      <div class="simulation">
+        <div class="slider-panel panel">
+          <div class="zone-title">Management assumptions</div>
+          <div class="slider-group">${sliders.map(([name, val, w]) => `
+            <div class="slider-row">
+              <div class="slider-top"><b>${name}</b><span>${val}</span></div>
+              <div class="slider-track"><div class="slider-fill" style="--w:${w}"></div></div>
+            </div>`).join('')}
+          </div>
+        </div>
+        <div class="scenario-panel panel">
+          <div class="zone-title">Scenario comparison</div>
+          <div class="decision-question">If cost rises or price drops, which scenario still protects margin?</div>
+          <div class="scenario-table">
+            <div class="scenario-cell head">Output</div><div class="scenario-cell head">Base</div><div class="scenario-cell head">A · cost +5%</div><div class="scenario-cell head">B · price -3%</div><div class="scenario-cell head">C · delay +3m</div>
+            <div class="scenario-cell metric">Margin %</div><div class="scenario-cell"><div class="scenario-value">19.6%</div></div><div class="scenario-cell"><div class="scenario-value down">16.8%</div></div><div class="scenario-cell"><div class="scenario-value down">15.9%</div></div><div class="scenario-cell"><div class="scenario-value down">18.4%</div></div>
+            <div class="scenario-cell metric">Gross profit</div><div class="scenario-cell"><div class="scenario-value">RM 133M</div></div><div class="scenario-cell"><div class="scenario-value down">RM 108M</div></div><div class="scenario-cell"><div class="scenario-value down">RM 96M</div></div><div class="scenario-cell"><div class="scenario-value down">RM 121M</div></div>
+            <div class="scenario-cell metric">Cost / SF</div><div class="scenario-cell"><div class="scenario-value">RM 128</div></div><div class="scenario-cell"><div class="scenario-value down">RM 134</div></div><div class="scenario-cell"><div class="scenario-value">RM 128</div></div><div class="scenario-cell"><div class="scenario-value">RM 128</div></div>
+            <div class="scenario-cell metric">Cashflow impact</div><div class="scenario-cell"><div class="scenario-value">Base</div></div><div class="scenario-cell"><div class="scenario-value down">-RM 25M</div></div><div class="scenario-cell"><div class="scenario-value down">-RM 37M</div></div><div class="scenario-cell"><div class="scenario-value down">-RM 12M</div></div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function copilotMockup() {
+  return `
+    <div class="journey-slide">
+      ${flowBreadcrumb([6])}
+      <div class="copilot-layout">
+        <div class="foundation-note panel">
+          <h3>Copilot is useful only when the data foundation is <em>clean.</em></h3>
+          <p>The first value is trusted structured data. Once feasibility is comparable by project, phase and month, Copilot can become a practical question layer for management.</p>
+          <div class="three-proof">
+            <div class="proof-card quiet-panel"><strong>Governed answers</strong><span>Answers come from structured feasibility data.</span></div>
+            <div class="proof-card quiet-panel"><strong>Faster management review</strong><span>Questions can be asked without waiting for a manual pack.</span></div>
+            <div class="proof-card quiet-panel"><strong>Feasibility-focused questions</strong><span>Questions focus on margin, cost, target and movement.</span></div>
+          </div>
+        </div>
+        <div class="qa-panel panel">
+          <div class="zone-title">Example management Q&A</div>
+          <div style="display:grid;gap:12px;align-content:start">
+            <div class="qa-question">Which phase has the biggest margin drop this quarter?</div>
+            <div class="qa-answer"><b>Phase 2</b> dropped by 2.4pp. Main driver: awarded construction cost above target, especially piling and M&E.</div>
+            <div class="qa-question">What changed from last month?</div>
+            <div class="qa-answer">Development cost increased RM 18M while GDV stayed flat. Margin moved from 21.2% to 19.6%.</div>
+            <div class="qa-question">If construction cost increases by 5%, what happens?</div>
+            <div class="qa-answer">Phase 2 margin is estimated to fall to <b>16.8%</b>, with gross profit reduced by around RM 25M.</div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function valueScorecard() {
+  const values = [
+    ['01', 'Multiple Excel versions', 'Controlled input structure', 'Fewer disputes over latest numbers'],
+    ['02', 'Assumptions overwritten', 'Monthly snapshots', 'Original, monthly and latest assumptions remain visible'],
+    ['03', 'Manual quarterly comparison', 'Dashboard-led review', 'Faster review cycles and less manual consolidation'],
+    ['04', 'Hard to trace phase movement', 'Master plan drill-down', 'Earlier root-cause visibility by phase, cost item or assumption'],
+    ['05', 'Static feasibility', 'Scenario simulation', 'Better decisions before price, cost, take-up or timeline changes are committed'],
+  ];
+  return `
+    <div class="value-scorecard">
+      <div class="score-header"><div></div><div>Current challenge</div><div>Platform capability</div><div>Management outcome</div></div>
+      ${values.map(([n, challenge, capability, outcome]) => `
+        <div class="score-row">
+          <div class="score-num">${n}</div>
+          <div class="score-cell challenge"><div class="score-cue">Before</div><b>${challenge}</b></div>
+          <div class="score-cell capability"><div class="score-cue">Platform</div><b>${capability}</b></div>
+          <div class="score-cell outcome"><div class="score-cue">Outcome</div><b>${outcome}</b></div>
+        </div>`).join('')}
+      <div class="score-takeaway">The value is not only reporting automation — it is stronger management control over feasibility changes.</div>
+    </div>`;
+}
+
+function pilotRoadmap() {
+  const steps = [
+    ['01', 'Discover', ['Select project / phases', 'Confirm existing workbook', 'Agree pilot success questions'], 'Pilot scope locked'],
+    ['02', 'Prototype', ['Snapshot concept', 'Executive dashboard mockup', 'Master plan to phase drill-down'], 'Working visual prototype'],
+    ['03', 'Management Review', ['Review real-data visibility', 'Test 1-2 simulations', 'Decide whether to scale'], 'Leadership decision'],
+  ];
+  return `<div class="pilot-roadmap">${steps.map(([n, h, list, out]) => `
+    <div class="pilot-step panel"><div class="pilot-num">${n}</div><h3>${h}</h3><div class="pilot-list">${list.map(x => `<div>· ${x}</div>`).join('')}</div><div class="pilot-output">${out}</div></div>`).join('')}</div>`;
+}
+
+const slides = [
+  heroSlide(),
+  slide(2, 'Excel reality', 'The current Excel reality is becoming difficult to control at scale', 'Excel can calculate, but multi-project and multi-phase feasibility creates version, history, comparison and root-cause pressure.', mergedRiskSlide()),
+  slide(3, 'Future control layer', 'The opportunity is to move from file management to management control', 'Keep Excel as input, but create a controlled layer for history, visibility, and faster decisions.', beforeAfter()),
+  slide(4, 'One flow', 'Big picture: one flow from input to decision', 'Keep Excel as the familiar input, then add control, history, visibility and decision support above it.', processFlow()),
+  slide(5, 'Phase 1 · Excel input', 'Excel remains the familiar input, but the template becomes controlled', 'Business users fill a familiar F_L2-style workbook, while metadata, row type and amount fields make the input ready for validation.', excelInputSlide()),
+  slide(6, 'Phase 1 · Fabric foundation', 'Fabric turns scattered feasibility files into a trusted data foundation', 'Once input rules are clear, feasibility data can be structured for reporting, comparison, snapshots and simulation.', fabricFoundationSlide()),
+  slide(7, 'Phase 1 · Snapshot', 'Monthly snapshots preserve feasibility history instead of overwriting it', 'After Excel input and Fabric foundation are in place, each monthly update becomes a saved business record.', snapshotTimeline()),
+  slide(8, 'Phase 2 · Drill-down', 'Power BI turns the master plan into a phase-level management view', 'Select a phase → see GDV, development cost, margin, cost per SF, budget vs awarded, actual vs target and root cause.', masterPlanDrilldown()),
+  slide(9, 'Management dashboard', 'The dashboard helps management identify where performance is changing', 'Feasibility becomes a management review screen, not a static file.', dashboardMockup()),
+  slide(10, 'Phase 3 · Simulation', 'Phase 3 turns feasibility from reporting into decision support', 'Management can test price, cost, take-up, financing and delay assumptions before committing.', simulationPanel()),
+  slide(11, 'Future Q&A layer', 'Copilot becomes useful after the data foundation is clean', 'AI is not the first value. Trusted feasibility data is the first value; Copilot becomes a practical question layer on top.', copilotMockup()),
+  slide(12, 'Business value', 'The business value is better control, faster visibility, and earlier risk detection', 'The platform improves how management reviews feasibility across projects and phases.', valueScorecard()),
+  slide(13, 'Pilot recommendation', 'Recommended next step: start with a focused pilot', 'Small scope, real data, fast proof, management review.', pilotRoadmap()),
+];
+
+deck.innerHTML = slides.join('');
+
+const slideEls = [...document.querySelectorAll('.slide')];
+let current = 0;
+
+slideEls.forEach((_, i) => {
+  const button = document.createElement('button');
+  button.setAttribute('aria-label', `Go to slide ${i + 1}`);
+  button.className = i === 0 ? 'active' : '';
+  button.addEventListener('click', () => goTo(i));
+  nav.appendChild(button);
+});
+
+function goTo(index) {
+  if (index < 0 || index >= slideEls.length) return;
+  slideEls[current].classList.remove('active');
+  nav.children[current].classList.remove('active');
+  current = index;
+  slideEls[current].classList.add('active');
+  nav.children[current].classList.add('active');
+}
+
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'ArrowRight' || event.key === ' ' || event.key === 'PageDown') {
+    event.preventDefault();
+    goTo(current + 1);
+  }
+  if (event.key === 'ArrowLeft' || event.key === 'PageUp') {
+    event.preventDefault();
+    goTo(current - 1);
+  }
+  if (event.key === 'Home') goTo(0);
+  if (event.key === 'End') goTo(slideEls.length - 1);
+});
+</script>
 </body>
 </html>
